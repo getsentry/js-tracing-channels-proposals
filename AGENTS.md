@@ -20,10 +20,15 @@ skills/              — Agent skills for generating new proposals
 
 ## Skills
 
-| Skill | Purpose |
-|---|---|
-| `skills/propose.md` | Create a new TracingChannel proposal for a library (API design, channel names, context fields) |
-| `skills/implement.md` | Implement TracingChannel support in a library's codebase (code, tests, PR) |
+**You MUST read the relevant skill file before starting any task.**
+
+| Skill | When to use | File |
+|---|---|---|
+| `skills/propose.md` | Asked to create a proposal, draft an issue, or design channels for a new library | Read this file first |
+| `skills/implement.md` | Asked to implement, code, add tracing, or create a PR for a library | Read this file first |
+
+If asked to "add tracing channels to X" or "implement tracing for X", read `skills/implement.md`.
+If asked to "create a proposal for X" or "draft an issue for X", read `skills/propose.md`.
 
 ## Creating a New Proposal
 
