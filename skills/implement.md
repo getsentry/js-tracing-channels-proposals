@@ -202,6 +202,49 @@ Test against a real instance of the service (not mocks). Subscribe to the `traci
   (hasTracingChannel ? describe : describe.skip)('Tracing Channel', () => { ... });
   ```
 
+## Step 6: Pre-commit validation
+
+**Before every commit**, you MUST run these checks locally. Do NOT push code that hasn't passed all of them.
+
+### 1. Lint all changed files
+
+Run the project's linter on every file you touched. Fix all errors — do NOT commit with lint failures.
+
+```bash
+# Example for mysql2 (uses eslint + prettier)
+npx eslint --fix <changed-files>
+npx eslint <changed-files>  # verify clean after fix
+```
+
+### 2. Run unit tests
+
+Run any unit tests related to your changes:
+
+```bash
+npx tsx test/unit/test-tracing.test.mts  # or equivalent
+```
+
+### 3. Run integration tests on all Node versions the repo's CI checks against
+
+Check the CI matrix (e.g., `.github/workflows/`) to find which Node versions are tested. Run integration tests on each of them — different versions may have different runtime behavior (e.g., Node 18 backported `TracingChannel` but without the aggregated `hasSubscribers` getter).
+
+```bash
+# Example: if CI tests Node 18 and Node 22
+nvm use 18 && npx tsx test/integration/tracing-channel.test.mts
+nvm use 22 && npx tsx test/integration/tracing-channel.test.mts
+```
+
+### 4. Run the full test suite if available
+
+If the project has a full test runner (e.g., `npm test`, `npx poku`), run it to catch regressions beyond your tracing code.
+
+### Node 18 compatibility gotchas
+
+- `TracingChannel.hasSubscribers` (the aggregated getter) is `undefined` on Node 18 — only sub-channel `hasSubscribers` (e.g., `channel.start.hasSubscribers`) works
+- Use `!== false` checks instead of truthy checks: `channel.hasSubscribers !== false` treats `undefined` (Node 18) as "might have subscribers, trace anyway" and `false` (Node 20+) as "definitely no subscribers, skip"
+- `process.getBuiltinModule` doesn't exist on Node 18 — always fallback to `require()`
+- poku's `skip()` calls `process.exit(0)` internally — safe because poku runs each test in a separate process
+
 ## Checklist
 
 - [ ] Tracing module created with Node 18 fallback
@@ -217,3 +260,6 @@ Test against a real instance of the service (not mocks). Subscribe to the `traci
 - [ ] Integration tests with real service (not mocks)
 - [ ] Tests gated on `TracingChannel` availability
 - [ ] Tests use dynamic connection info from test infra (no hardcoded ports)
+- [ ] **Lint passes on all changed files**
+- [ ] **Unit tests pass**
+- [ ] **Integration tests pass on all Node versions in CI matrix**

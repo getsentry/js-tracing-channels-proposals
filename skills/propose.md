@@ -21,16 +21,39 @@ Read the existing proposals in `proposals/` for examples and patterns:
 
 ## Steps
 
-### 1. Research the target library
+### 1. Research the target library (GATE — must complete before proceeding)
 
-Before writing anything, understand:
+Before writing anything, research the library thoroughly. **Do not skip any of these checks.** Report your findings to the user before moving on.
 
+Search the library's GitHub repo for ALL of the following:
+
+- **Maintenance status (GATE — blockers if failed):** Check whether the library is actively maintained. Look at:
+  - **Recent commits:** When was the last commit to the default branch? Is there regular commit activity in the past 6 months?
+  - **Issue triage:** Are issues being responded to? Are there recent issues that received maintainer responses, or is the tracker full of unanswered issues?
+  - **PR activity:** Are PRs being reviewed and merged, or are they piling up with no response?
+  - **npm release recency:** When was the last version published?
+  - **If the library appears unmaintained:** STOP. Report your findings to the user (last commit date, issue/PR response pattern, last release). A TracingChannel proposal to an unmaintained library is unlikely to be reviewed or merged. Ask the user how they'd like to proceed — options include:
+    - Skip this library entirely
+    - Target the actively maintained successor/fork instead (e.g. `mysql2` instead of `mysql`)
+    - Proceed anyway if the user has reason to believe the maintainers are still responsive (e.g. low-activity but not abandoned)
+- **Existing `diagnostics_channel` / `TracingChannel` support:** Search the repo for `diagnostics_channel`, `TracingChannel`, `dc.channel`, `dc.tracingChannel`. Also search issues and PRs for these terms.
+  - **If the library already has TracingChannel support:** STOP. Tell the user it's already implemented, link to the relevant code/PR, and ask how they'd like to proceed (e.g. improve coverage, add missing channels, or skip).
+- **Library's own tracing/observability APIs:** Search for the library's own mechanisms for exposing internal operation lifecycle — things like query events, hook systems, plugin APIs, or built-in tracing callbacks. Examples: Mongoose's `pre`/`post` hooks, Knex's `query` event, Tedious's `debug` event, Prisma's middleware. Search the repo for `trace`, `hook`, `plugin`, `event`, `observe`, `instrument`, `diagnostic`, `debug`.
+  - **If the library already has its own tracing/observability system:** Report what you found to the user. Note what it covers (which operations, what data is exposed, whether it supports async context) vs what TracingChannel would add. Ask the user how to proceed — options include:
+    - Reference the existing system in the proposal and explain why TracingChannel is still valuable (e.g. async context propagation, standardized lifecycle, zero-cost when unused, cross-library consistency for APM vendors)
+    - Propose TracingChannel as a complement that coexists with the existing system
+    - Propose building TracingChannel on top of the existing system if it's already close in shape
 - **What operations does it perform?** (queries, commands, connections, pool management, etc.)
 - **What does the existing OTel instrumentation patch?** Check `@opentelemetry/instrumentation-{name}` source code to see which prototypes/methods are monkey-patched. This tells you exactly what events the library should emit.
 - **What attributes does OTel extract?** Map these to context fields. The [OTel semantic conventions for databases](https://opentelemetry.io/docs/specs/semconv/database/) are the reference.
-- **Does the library already have any `diagnostics_channel` support?** Search the repo for `diagnostics_channel`, `TracingChannel`, `dc.channel`.
 - **What's the library's async model?** Callbacks, promises, streams? This affects how `TracingChannel` wraps operations.
 - **Does it have a connection pool?** Pools typically need their own channels for acquire/release.
+
+**Present your research findings to the user and wait for confirmation before proceeding to step 2.** Include:
+1. Maintenance status — last commit, last release, issue/PR responsiveness (blocker if unmaintained)
+2. Whether TracingChannel or diagnostics_channel already exists (blocker if yes)
+3. Any existing observability APIs and what they cover (needs user decision)
+4. Summary of operations, OTel patches, and attributes discovered
 
 ### 2. Design the channels
 
