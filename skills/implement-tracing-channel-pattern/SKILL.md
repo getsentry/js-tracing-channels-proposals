@@ -109,6 +109,15 @@ export interface RequestTraceContext {
 ### Create channels and trace helpers
 
 ```ts
+// Check explicitly for `false` rather than truthiness because `hasSubscribers`
+// is not available on all Node.js versions that support TracingChannel.
+// When `hasSubscribers` is `undefined` (older Node), we assume there are
+// subscribers and trace unconditionally, keeping the zero-cost optimization
+// only for versions where we can reliably check.
+function shouldTrace(channel: TracingChannel<any> | undefined): channel is TracingChannel<any> {
+  return !!channel && channel.hasSubscribers !== false;
+}
+
 const commandChannel: TracingChannel<CommandContext> | undefined = hasTracingChannel
   ? dc.tracingChannel('<package>:command')
   : undefined;
@@ -117,7 +126,7 @@ export function traceCommand<T>(
   fn: () => Promise<T>,
   contextFactory: () => CommandContext
 ): Promise<T> {
-  if (commandChannel?.hasSubscribers) {
+  if (shouldTrace(commandChannel)) {
     return commandChannel.tracePromise(fn, contextFactory());
   }
   return fn();
@@ -241,13 +250,13 @@ If the project has a full test runner (e.g., `npm test`, `npx poku`), run it to 
 ### Node 18 compatibility gotchas
 
 - `TracingChannel.hasSubscribers` (the aggregated getter) is `undefined` on Node 18 — only sub-channel `hasSubscribers` (e.g., `channel.start.hasSubscribers`) works
-- Use `!== false` checks instead of truthy checks: `channel.hasSubscribers !== false` treats `undefined` (Node 18) as "might have subscribers, trace anyway" and `false` (Node 20+) as "definitely no subscribers, skip"
+- Use the `shouldTrace` helper which checks `hasSubscribers !== false`: treats `undefined` (Node 18) as "might have subscribers, trace anyway" and `false` (Node 20+) as "definitely no subscribers, skip". Also serves as a type guard for TypeScript narrowing.
 - `process.getBuiltinModule` doesn't exist on Node 18 — always fallback to `require()`
 - poku's `skip()` calls `process.exit(0)` internally — safe because poku runs each test in a separate process
 
 ## Checklist
 
-- [ ] Tracing module created with Node 18 fallback
+- [ ] Tracing module created with Node 18 fallback and `shouldTrace` guard
 - [ ] `TracingChannel` shim type for `hasSubscribers` and `tracePromise` return type
 - [ ] Context types defined matching OTEL semantic conventions
 - [ ] Context factory pattern (lazy, not eager)

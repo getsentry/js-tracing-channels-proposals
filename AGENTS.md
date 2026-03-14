@@ -24,26 +24,12 @@ skills/              — Agent skills for generating new proposals
 
 | Skill | When to use | File |
 |---|---|---|
-| `skills/propose.md` | Asked to create a proposal, draft an issue, or design channels for a new library | Read this file first |
-| `skills/implement.md` | Asked to implement, code, add tracing, or create a PR for a library | Read this file first |
-
-If asked to "add tracing channels to X" or "implement tracing for X", read `skills/implement.md`.
-If asked to "create a proposal for X" or "draft an issue for X", read `skills/propose.md`.
-
-## Creating a New Proposal
-
-Use the skill at `skills/propose.md`. It will:
-
-1. Research the target library and its OTel instrumentation
-2. Design channel names and context properties mapped to OTel semantic conventions
-3. Draft the proposal using the established template
-4. Reference all existing proposals as prior art
-
-**Key rule:** Always read ALL files in `proposals/` before writing a new one. Each proposal builds on patterns from previous ones.
+| `skills/propose-tracing-channel-pattern-for-a-library-or-a-framework.md` | Asked to create a proposal, draft an issue, or design channels for a new library | Read this file first |
+| `skills/implement-tracing-channel-pattern-for-a-library-or-a-framework.md` | Asked to implement, code, add tracing, or create a PR for a library | Read this file first |
 
 ## Conventions
 
 - **Channel naming:** `{npm-package-name}:{operation}` (e.g. `mysql2:query`, `ioredis:command`)
 - **Context fields:** Map to [OTel database semantic conventions](https://opentelemetry.io/docs/specs/semconv/database/)
-- **Backward compat:** Zero-cost when no subscribers, graceful degradation on Node < 19.9
+- **Backward compat:** Zero-cost when no subscribers, graceful degradation on Node < 19.9. Use `shouldTrace` helper (`hasSubscribers !== false`) — never raw truthiness checks — to handle Node versions where `hasSubscribers` is `undefined`
 - **Prior art:** Always link `undici` (Node core), plus all existing proposals/PRs

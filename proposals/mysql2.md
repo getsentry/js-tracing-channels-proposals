@@ -1,3 +1,10 @@
+# mysql2: `TracingChannel` Proposal
+
+> **PR:** [sidorares/node-mysql2#4178](https://github.com/sidorares/node-mysql2/pull/4178)
+> **Status:** ✅ Merged
+
+---
+
 I'd like to propose adding first-class [`TracingChannel`](https://nodejs.org/api/diagnostics_channel.html#class-tracingchannel) support to `mysql2`, following the pattern established by [`undici`](https://github.com/nodejs/undici) in Node.js core.
 
 `TracingChannel` is a higher-level API built on top of `diagnostics_channel`, specifically designed for tracing async operations. It provides structured lifecycle channels (`start`, `end`, `error`, `asyncStart`, `asyncEnd`) and handles async context propagation correctly, which was the missing piece that makes existing monkey-patching approaches fragile in real-world async Node.js applications.
@@ -67,6 +74,7 @@ This approach follows the same pattern already adopted or in progress by other m
 - **`node-redis`** — [redis/node-redis#3195](https://github.com/redis/node-redis/pull/3195) (`node-redis:command`, `node-redis:connect`)
 - **`ioredis`** — [redis/ioredis#2089](https://github.com/redis/ioredis/pull/2089) (`ioredis:command`, `ioredis:connect`)
 - **`pg` / `pg-pool`** — [brianc/node-postgres#3624](https://github.com/brianc/node-postgres/pull/3624) (`pg:query`, `pg:connection`, `pg:pool:connect`)
+- **`mysql2`** — [sidorares/node-mysql2#4178](https://github.com/sidorares/node-mysql2/pull/4178) (`mysql2:query`, `mysql2:execute`, `mysql2:connect`, `mysql2:pool:connect`) ✅ merged
 
 ---
 
