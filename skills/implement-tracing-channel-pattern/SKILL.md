@@ -148,7 +148,28 @@ export { CommandTraceContext, ConnectTraceContext } from './tracing';
 
 1. **Use `tracePromise`** for async operations. It handles the full lifecycle: `start` → `end` → `asyncStart` → `asyncEnd`/`error`.
 
-2. **Accept a context factory, not an eager object.** The factory is only called when `hasSubscribers` is true. This guarantees zero-cost when no APM is listening:
+2. **`tracePromise` returns a native Promise.** If the library supports custom Promise implementations (e.g. `{ Promise: bluebird }`), do NOT use `tracePromise` — it will silently replace the user's Promise type with a native one, breaking `instanceof` checks. Use `traceCallback` inside the user's Promise constructor instead:
+   ```js
+   // BAD — returns native Promise, breaks custom Promise support
+   if (shouldTrace(channel)) {
+     return channel.tracePromise(() => new this._Promise(...), context)
+   }
+   return new this._Promise(...)
+
+   // GOOD — preserves whatever Promise type the user configured
+   return new this._Promise((resolve, reject) => {
+     const callback = (err, res) => err ? reject(err) : resolve(res)
+     if (shouldTrace(channel)) {
+       channel.traceCallback((tracedCb) => doWork(tracedCb), 0, context, null, callback)
+     } else {
+       doWork(callback)
+     }
+   })
+   ```
+
+3. **`traceCallback` requires an actual callback.** If the code path has no callback (e.g. event-emitter-style queries, fire-and-forget operations), do NOT call `traceCallback` — it will crash when trying to wrap `undefined`. Always guard: `if (shouldTrace(channel) && callback)`.
+
+4. **Accept a context factory, not an eager object.** The factory is only called when `hasSubscribers` is true. This guarantees zero-cost when no APM is listening:
    ```ts
    // GOOD — zero allocation when no subscribers
    traceCommand(fn, () => buildContext(args))
@@ -157,9 +178,9 @@ export { CommandTraceContext, ConnectTraceContext } from './tracing';
    traceCommand(fn, buildContext(args))
    ```
 
-3. **Do NOT copy/snapshot args.** `diagnostics_channel` intentionally allows subscribers to mutate context. APMs may need to inject distributed trace headers or annotate the context. Pass args by reference.
+5. **Do NOT copy/snapshot args.** `diagnostics_channel` intentionally allows subscribers to mutate context. APMs may need to inject distributed trace headers or annotate the context. Pass args by reference.
 
-4. **Handle IPC/Unix sockets.** When the connection uses a Unix domain socket (`path`), emit the path as `serverAddress` with `undefined` for `serverPort`. Never silently default to `localhost:6379` (or equivalent):
+6. **Handle IPC/Unix sockets.** When the connection uses a Unix domain socket (`path`), emit the path as `serverAddress` with `undefined` for `serverPort`. Never silently default to `localhost:6379` (or equivalent):
    ```ts
    if (options && 'path' in options) {
      return { serverAddress: options.path, serverPort: undefined };
@@ -167,11 +188,11 @@ export { CommandTraceContext, ConnectTraceContext } from './tracing';
    return { serverAddress: options?.host ?? 'localhost', serverPort: options?.port ?? DEFAULT_PORT };
    ```
 
-5. **Trace at the single funnel point.** Find the one method all operations flow through and instrument there. Don't scatter trace calls across the codebase.
+7. **Trace at the single funnel point.** Find the one method all operations flow through and instrument there. Don't scatter trace calls across the codebase.
 
-6. **For batched operations that bypass the main path**, add tracing directly in the batch execution method. Each individual operation in a batch gets its own trace event (not one wrapper trace), with additional `batchMode` and `batchSize` fields. This matches how OTEL instruments batches.
+8. **For batched operations that bypass the main path**, add tracing directly in the batch execution method. Each individual operation in a batch gets its own trace event (not one wrapper trace), with additional `batchMode` and `batchSize` fields. This matches how OTEL instruments batches.
 
-7. **Connection tracing covers initial connect only.** Don't trace reconnections — OTEL doesn't, and reconnections are an internal implementation detail.
+9. **Connection tracing covers initial connect only.** Don't trace reconnections — OTEL doesn't, and reconnections are an internal implementation detail.
 
 ## Step 4: Determine scope using OTEL as north star
 
@@ -225,30 +246,47 @@ npx eslint --fix <changed-files>
 npx eslint <changed-files>  # verify clean after fix
 ```
 
-### 2. Run the ENTIRE test suite, not just your new tests
+### 2. Start the service in Docker for integration tests
+
+If the project has integration tests (and most do), spin up the service locally. Do NOT skip integration tests — unit tests alone will not catch issues like `tracePromise` silently replacing a custom Promise type.
+
+```bash
+# Example for a database client
+docker run -d --name test-db -e POSTGRES_PASSWORD=postgres -p 5432:5432 postgres:16
+# Wait for it
+docker exec test-db pg_isready -U postgres
+
+# Example for Redis
+docker run -d --name test-redis -p 6379:6379 redis:7
+```
+
+### 3. Run the ENTIRE test suite (unit AND integration), not just your new tests
 
 **Do NOT cherry-pick which tests to run.** Run the project's full test suite — your tracing code touches hot paths (query execution, connection setup) that affect every existing test. A change that looks isolated can break tests you'd never think to check.
 
 ```bash
-# Run ALL tests, not just the ones you wrote
-npm test  # or yarn test, make test, etc.
+# Run ALL tests — unit AND integration
+PGUSER=postgres PGPASSWORD=postgres npm test  # or yarn test, make test, etc.
 ```
 
-### 3. Run the full test suite on EVERY Node version in the CI matrix using nvm
+### 4. Run the full test suite on EVERY Node version in the CI matrix using nvm
 
-Check the CI matrix (e.g., `.github/workflows/`) to find which Node versions are tested. **You must run the full test suite against every version in the matrix before pushing.** `TracingChannel` behavior varies significantly across Node versions — `shouldTrace` returns different values on Node 18 vs 20+, which means different code paths execute on different versions. A test that passes on Node 20 can crash on Node 18 because `shouldTrace` returns `true` on 18 (due to `undefined hasSubscribers`) but `false` on 20 (no subscribers), exercising tracing code paths that are skipped on 20.
+Check the CI matrix (e.g., `.github/workflows/`) to find which Node versions are tested. **You must run the full test suite (unit AND integration) against every version in the matrix before pushing.** `TracingChannel` behavior varies significantly across Node versions — `shouldTrace` returns different values on Node 18 vs 20+, which means different code paths execute on different versions. A test that passes on Node 20 can crash on Node 18 because `shouldTrace` returns `true` on 18 (due to `undefined hasSubscribers`) but `false` on 20 (no subscribers), exercising tracing code paths that are skipped on 20.
 
 ```bash
 # Install any missing versions first
 nvm install 16 && nvm install 18 && nvm install 20
 
-# Run the FULL test suite against EVERY version
-nvm use 16 && npm test
-nvm use 18 && npm test
-nvm use 20 && npm test
+# Run the FULL test suite (unit + integration) against EVERY version
+nvm use 16 && PGUSER=postgres PGPASSWORD=postgres npm test
+nvm use 18 && PGUSER=postgres PGPASSWORD=postgres npm test
+nvm use 20 && PGUSER=postgres PGPASSWORD=postgres npm test
+
+# Clean up
+docker stop test-db && docker rm test-db
 ```
 
-**Do NOT skip this step. Do NOT run only your new tests. Do NOT assume that passing on one version means passing on all.** The `shouldTrace` helper activates tracing code unconditionally on Node 18 (where `hasSubscribers` is `undefined`), which means existing tests that never touch diagnostics can still break if your tracing wrappers have bugs (e.g. wrapping a callback that doesn't exist).
+**Do NOT skip this step. Do NOT run only unit tests. Do NOT run only your new tests. Do NOT assume that passing on one version means passing on all.** The `shouldTrace` helper activates tracing code unconditionally on Node 18 (where `hasSubscribers` is `undefined`), which means existing tests that never touch diagnostics can still break if your tracing wrappers have bugs (e.g. wrapping a callback that doesn't exist, or returning the wrong Promise type).
 
 ### Node 18 compatibility gotchas
 
@@ -271,9 +309,11 @@ nvm use 20 && npm test
 - [ ] IPC/Unix socket connections handled (no false `localhost` defaults)
 - [ ] Args passed by reference (no snapshot/copy)
 - [ ] Context types exported from package entry point
-- [ ] Integration tests with real service (not mocks)
+- [ ] Integration tests with real service via Docker (not mocks)
 - [ ] Tests gated on `TracingChannel` availability (skip on Node 16; may need stricter gating if Node 18 tests hit unsubscribe bugs)
 - [ ] Tests use dynamic connection info from test infra (no hardcoded ports)
+- [ ] `traceCallback` guarded against undefined callbacks (`shouldTrace(ch) && callback`)
+- [ ] `tracePromise` not used where custom Promise types must be preserved (use `traceCallback` inside user's Promise constructor instead)
 - [ ] **Lint passes on all changed files**
-- [ ] **Unit tests pass**
-- [ ] **Integration tests pass on all Node versions in CI matrix**
+- [ ] **FULL test suite (unit + integration) passes locally with Docker**
+- [ ] **FULL test suite passes on ALL Node versions in CI matrix via nvm**
