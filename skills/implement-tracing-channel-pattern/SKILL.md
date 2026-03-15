@@ -205,7 +205,7 @@ Test against a real instance of the service (not mocks). Subscribe to the `traci
 
 - **Do NOT hardcode `127.0.0.1` and default ports.** In CI, services run in Docker with dynamically assigned ports. Use the test infrastructure's connection details.
 - **Always unsubscribe in `finally` blocks** using the same function reference you subscribed with. Leaking subscribers across tests causes flaky assertions.
-- **Gate tests on `TracingChannel` availability** since it doesn't exist on Node 18:
+- **Gate tests on `TracingChannel` availability.** At minimum, skip when `dc.tracingChannel` doesn't exist (Node 16). On Node 18, `TracingChannel` exists but might have issues (see Node 18 gotchas below) — if your tests fail there, you may need stricter gating:
   ```ts
   const hasTracingChannel = typeof dc.tracingChannel === 'function';
   (hasTracingChannel ? describe : describe.skip)('Tracing Channel', () => { ... });
@@ -252,6 +252,8 @@ If the project has a full test runner (e.g., `npm test`, `npx poku`), run it to 
 - `TracingChannel.hasSubscribers` (the aggregated getter) is `undefined` on Node 18 — only sub-channel `hasSubscribers` (e.g., `channel.start.hasSubscribers`) works
 - Use the `shouldTrace` helper which checks `hasSubscribers !== false`: treats `undefined` (Node 18) as "might have subscribers, trace anyway" and `false` (Node 20+) as "definitely no subscribers, skip". Also serves as a type guard for TypeScript narrowing.
 - `process.getBuiltinModule` doesn't exist on Node 18 — always fallback to `require()`
+- **Node 18's `TracingChannel.unsubscribe` might be broken:** on some Node 18 versions, unsubscribing from a tracing channel and then calling `traceCallback`/`tracePromise` again on the same channel can crash with `Cannot read properties of undefined (reading 'length')` because `_subscribers` on sub-channels becomes `undefined`. This doesn't affect production use (APMs subscribe once at startup), but it can break test patterns that subscribe/unsubscribe/resubscribe across tests. If your tests hit this, you may need stricter gating (e.g. checking `typeof hasSubscribers === 'boolean'` to require Node 19.9+/20.5+).
+- Plain `dc.channel()` works fine on Node 16+ — only gate TracingChannel tests, not plain channel tests.
 - poku's `skip()` calls `process.exit(0)` internally — safe because poku runs each test in a separate process
 
 ## Checklist
@@ -267,7 +269,7 @@ If the project has a full test runner (e.g., `npm test`, `npx poku`), run it to 
 - [ ] Args passed by reference (no snapshot/copy)
 - [ ] Context types exported from package entry point
 - [ ] Integration tests with real service (not mocks)
-- [ ] Tests gated on `TracingChannel` availability
+- [ ] Tests gated on `TracingChannel` availability (skip on Node 16; may need stricter gating if Node 18 tests hit unsubscribe bugs)
 - [ ] Tests use dynamic connection info from test infra (no hardcoded ports)
 - [ ] **Lint passes on all changed files**
 - [ ] **Unit tests pass**
