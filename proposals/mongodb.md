@@ -8,7 +8,7 @@ The MongoDB driver already has an excellent observability foundation — the [Co
 
 2. **Opt-in gating.** Command Monitoring only fires when the user passes `monitorCommands: true` to `MongoClient`. APM tools can't control how users instantiate their clients, so they can't rely on this flag being set. Monkey-patching works regardless of user configuration.
 
-3. **Split lifecycle.** `commandStarted` and `commandSucceeded`/`commandFailed` are separate EventEmitter events. To build a span, APM tools must correlate them via `requestId` and manage span storage manually. This is fragile and adds overhead compared to wrapping the operation directly.
+3. **Split lifecycle.** `commandStarted` and `commandSucceeded`/`commandFailed` are separate EventEmitter events. To build a span, APM tools must correlate them via `requestId` and manage span storage manually. Tracing channels provide a contextualized lifecycle for the operation, so correlation is built-in.
 
 Beyond these APM-specific gaps, the current monkey-patching approach has broader ecosystem concerns:
 
