@@ -213,7 +213,7 @@ Test against a real instance of the service (not mocks). Subscribe to the `traci
 
 ## Step 6: Pre-commit validation
 
-**Before every commit**, you MUST run these checks locally. Do NOT push code that hasn't passed all of them.
+**CRITICAL: Before every push**, you MUST run ALL of the checks below locally. Do NOT push code that hasn't passed ALL of them. Every failed CI run on someone else's repo damages credibility and wastes maintainer attention. There is no excuse for pushing code that fails CI when you can catch it locally.
 
 ### 1. Lint all changed files
 
@@ -225,31 +225,30 @@ npx eslint --fix <changed-files>
 npx eslint <changed-files>  # verify clean after fix
 ```
 
-### 2. Run unit tests
+### 2. Run the ENTIRE test suite, not just your new tests
 
-Run any unit tests related to your changes:
+**Do NOT cherry-pick which tests to run.** Run the project's full test suite — your tracing code touches hot paths (query execution, connection setup) that affect every existing test. A change that looks isolated can break tests you'd never think to check.
 
 ```bash
-npx tsx test/unit/test-tracing.test.mts  # or equivalent
+# Run ALL tests, not just the ones you wrote
+npm test  # or yarn test, make test, etc.
 ```
 
-### 3. Run tests on all Node versions in the CI matrix using nvm
+### 3. Run the full test suite on EVERY Node version in the CI matrix using nvm
 
-Check the CI matrix (e.g., `.github/workflows/`) to find which Node versions are tested. **You must run your tests locally against every version in the matrix before pushing.** `TracingChannel` behavior varies significantly across Node versions — tests that pass on Node 20+ can crash on Node 18 or fail entirely on Node 16. Do not assume passing on one version means passing on all.
+Check the CI matrix (e.g., `.github/workflows/`) to find which Node versions are tested. **You must run the full test suite against every version in the matrix before pushing.** `TracingChannel` behavior varies significantly across Node versions — `shouldTrace` returns different values on Node 18 vs 20+, which means different code paths execute on different versions. A test that passes on Node 20 can crash on Node 18 because `shouldTrace` returns `true` on 18 (due to `undefined hasSubscribers`) but `false` on 20 (no subscribers), exercising tracing code paths that are skipped on 20.
 
 ```bash
 # Install any missing versions first
 nvm install 16 && nvm install 18 && nvm install 20
 
-# Run against each version in the CI matrix
-nvm use 16 && node test/tracing-tests.js
-nvm use 18 && node test/tracing-tests.js
-nvm use 20 && node test/tracing-tests.js
+# Run the FULL test suite against EVERY version
+nvm use 16 && npm test
+nvm use 18 && npm test
+nvm use 20 && npm test
 ```
 
-### 4. Run the full test suite if available
-
-If the project has a full test runner (e.g., `npm test`, `npx poku`), run it to catch regressions beyond your tracing code.
+**Do NOT skip this step. Do NOT run only your new tests. Do NOT assume that passing on one version means passing on all.** The `shouldTrace` helper activates tracing code unconditionally on Node 18 (where `hasSubscribers` is `undefined`), which means existing tests that never touch diagnostics can still break if your tracing wrappers have bugs (e.g. wrapping a callback that doesn't exist).
 
 ### Node 18 compatibility gotchas
 
