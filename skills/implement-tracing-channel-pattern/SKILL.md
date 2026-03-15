@@ -233,14 +233,18 @@ Run any unit tests related to your changes:
 npx tsx test/unit/test-tracing.test.mts  # or equivalent
 ```
 
-### 3. Run integration tests on all Node versions the repo's CI checks against
+### 3. Run tests on all Node versions in the CI matrix using nvm
 
-Check the CI matrix (e.g., `.github/workflows/`) to find which Node versions are tested. Run integration tests on each of them — different versions may have different runtime behavior (e.g., Node 18 backported `TracingChannel` but without the aggregated `hasSubscribers` getter).
+Check the CI matrix (e.g., `.github/workflows/`) to find which Node versions are tested. **You must run your tests locally against every version in the matrix before pushing.** `TracingChannel` behavior varies significantly across Node versions — tests that pass on Node 20+ can crash on Node 18 or fail entirely on Node 16. Do not assume passing on one version means passing on all.
 
 ```bash
-# Example: if CI tests Node 18 and Node 22
-nvm use 18 && npx tsx test/integration/tracing-channel.test.mts
-nvm use 22 && npx tsx test/integration/tracing-channel.test.mts
+# Install any missing versions first
+nvm install 16 && nvm install 18 && nvm install 20
+
+# Run against each version in the CI matrix
+nvm use 16 && node test/tracing-tests.js
+nvm use 18 && node test/tracing-tests.js
+nvm use 20 && node test/tracing-tests.js
 ```
 
 ### 4. Run the full test suite if available
