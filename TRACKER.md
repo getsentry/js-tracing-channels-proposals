@@ -29,7 +29,7 @@ These currently depend on OTel's monkey-patching infrastructure (IITM/RITM).
 | Mongoose | `mongoose` | `packages/node/src/integrations/tracing/mongoose.ts` | — | Not started |
 | Redis | `redis` | `packages/node/src/integrations/tracing/redis.ts` | [node-redis#3195](https://github.com/redis/node-redis/pull/3195) | PR open — approved by Qard + tlhunter |
 | IORedis | `ioredis` | `packages/node/src/integrations/tracing/redis.ts` | [ioredis#2089](https://github.com/redis/ioredis/pull/2089) | PR open — contributor acknowledged, pending review |
-| Tedious (MSSQL) | `tedious` | `packages/node/src/integrations/tracing/tedious.ts` | — | Not started |
+| Tedious (MSSQL) | `tedious` | `packages/node/src/integrations/tracing/tedious.ts` | — | Proposal drafted |
 | Knex | `knex` | `packages/node/src/integrations/tracing/knex.ts` | — | Not started |
 | Prisma | `prisma` | `packages/node/src/integrations/tracing/prisma.ts` | — | Not started |
 
