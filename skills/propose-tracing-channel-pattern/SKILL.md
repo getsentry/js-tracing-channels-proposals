@@ -19,6 +19,10 @@ Read the existing proposals in `proposals/` for examples and patterns:
 
 **Always read ALL existing proposals before drafting a new one.** They demonstrate the evolving style and increasing sophistication of the proposals. Each new proposal should learn from and reference the previous ones.
 
+### Learnings from PR Reviews
+
+**Read `LEARNINGS.md` before drafting.** It contains distilled lessons from upstream PR reviews — things maintainers pushed back on, naming conventions they preferred, payload shape decisions, etc. Apply any relevant learnings to the new proposal to avoid repeating past mistakes.
+
 ## Steps
 
 ### 1. Research the target library (GATE — must complete before proceeding)
