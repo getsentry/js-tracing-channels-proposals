@@ -27,7 +27,8 @@ Use `gh pr view <url>` or `WebFetch` to check each PR.
 ### 3. Check for new upstream PRs or issues
 
 For libraries that have proposals in `proposals/` but no PR link in the tracker, check if a PR or issue has been opened upstream:
-- Search the target repo for issues/PRs mentioning `TracingChannel` or `diagnostics_channel`
+- Search the target repo for issues/PRs mentioning `TracingChannel` or `diagnostics_channel` or `tracing channel`
+- Also search the target repo for recent issues/PRs created by the current user (`--author=@me`) to catch issues that may use different wording
 - If found, add the link to the tracker
 
 ### 4. Update the tracker tables
