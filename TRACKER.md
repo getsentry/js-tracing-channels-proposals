@@ -33,7 +33,7 @@ These currently depend on OTel's monkey-patching infrastructure (IITM/RITM).
 | PostgreSQL | `pg` | `packages/node/src/integrations/tracing/postgres.ts` | [node-postgres#3624](https://github.com/brianc/node-postgres/pull/3624) | 🟡 PR open — no maintainer review yet |
 | MySQL | `mysql` | `packages/node/src/integrations/tracing/mysql.ts` | — | ⬜ Not started |
 | MySQL2 | `mysql2` | `packages/node/src/integrations/tracing/mysql2.ts` | [node-mysql2#4178](https://github.com/sidorares/node-mysql2/pull/4178) | ✅ **Merged** (2026-03-15) |
-| MongoDB | `mongodb` | `packages/node/src/integrations/tracing/mongo.ts` | — | 💬 Proposal sent, under discussion |
+| MongoDB | `mongodb` | `packages/node/src/integrations/tracing/mongo.ts` | [NODE-7472](https://jira.mongodb.org/browse/NODE-7472) | 💬 Proposal sent, under discussion |
 | Mongoose | `mongoose` | `packages/node/src/integrations/tracing/mongoose.ts` | — | ⬜ Not started |
 | Redis | `redis` | `packages/node/src/integrations/tracing/redis.ts` | [node-redis#3195](https://github.com/redis/node-redis/pull/3195) | 🟡 PR open — approved by Qard + tlhunter |
 | IORedis | `ioredis` | `packages/node/src/integrations/tracing/redis.ts` | [ioredis#2089](https://github.com/redis/ioredis/pull/2089) | 🟡 PR open — contributor acknowledged, pending review |
