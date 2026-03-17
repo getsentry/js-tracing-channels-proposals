@@ -34,15 +34,15 @@ For libraries that have proposals in `proposals/` but no PR link in the tracker,
 
 Update each row in `TRACKER.md` with the latest status. Follow these status conventions:
 
-| Status | Meaning |
-|---|---|
-| Not started | No proposal or PR exists |
-| Proposal drafted | Proposal exists in `proposals/` but no upstream PR |
-| PR open | Upstream PR exists and is open |
-| PR open — approved by X | PR has approvals |
-| PR open — changes requested | Maintainer requested changes |
-| **Merged** (YYYY-MM-DD) | PR merged, include date |
-| In discussion | Issue/discussion open but no PR yet |
+| Emoji | Status | Meaning |
+|---|---|---|
+| ⬜ | Not started | No proposal or PR exists |
+| 📝 | Proposal drafted | Proposal exists in `proposals/` but no upstream PR |
+| 💬 | In discussion | Issue/discussion open but no PR yet |
+| 🟡 | PR open | Upstream PR exists and is open |
+| 🟡 | PR open — approved by X | PR has approvals |
+| 🟡 | PR open — changes requested | Maintainer requested changes |
+| ✅ | **Merged** (YYYY-MM-DD) | PR merged, include date |
 
 ### 5. Recalculate the Progress Summary
 
