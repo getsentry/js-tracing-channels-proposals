@@ -10,6 +10,7 @@
 | 💬 | In discussion / reached out |
 | 📝 | Proposal drafted |
 | ⬜ | Not started |
+| 🔴 | No go — unmaintained / not viable |
 
 ## OTel-Provided (24) — Need Full Rewrite or Drop
 
@@ -31,7 +32,7 @@ These currently depend on OTel's monkey-patching infrastructure (IITM/RITM).
 | Integration | Target Package | Sentry Location | Upstream Issue | Upstream PR | Status |
 |---|---|---|---|---|---|
 | PostgreSQL | `pg` | `packages/node/src/integrations/tracing/postgres.ts` | [node-postgres#3619](https://github.com/brianc/node-postgres/issues/3619) | [node-postgres#3624](https://github.com/brianc/node-postgres/pull/3624) | 🟡 PR open — no maintainer review yet |
-| MySQL | `mysql` | `packages/node/src/integrations/tracing/mysql.ts` | — | — | ⬜ Not started |
+| MySQL | `mysql` | `packages/node/src/integrations/tracing/mysql.ts` | — | — | 🔴 Unmaintained — use `mysql2` |
 | MySQL2 | `mysql2` | `packages/node/src/integrations/tracing/mysql2.ts` | [node-mysql2#4174](https://github.com/sidorares/node-mysql2/issues/4174) | [node-mysql2#4178](https://github.com/sidorares/node-mysql2/pull/4178) | ✅ **Merged** (2026-03-15) |
 | MongoDB | `mongodb` | `packages/node/src/integrations/tracing/mongo.ts` | [NODE-7472](https://jira.mongodb.org/browse/NODE-7472) | — | 💬 Issue opened |
 | Mongoose | `mongoose` | `packages/node/src/integrations/tracing/mongoose.ts` | [mongoose#16105](https://github.com/Automattic/mongoose/issues/16105) | — | 💬 Issue opened |
