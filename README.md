@@ -55,6 +55,60 @@ dc.tracingChannel('mysql2:query').subscribe({
 
 Zero cost when no subscribers — `channel.hasSubscribers` short-circuits before allocating any context objects.
 
+## Workflow
+
+This repo includes Claude Code skills that automate the proposal → implement → review → learn cycle. Each step is triggered by the human operator.
+
+### 1. Write a proposal
+
+```
+> use the propose skill for kafkajs
+```
+
+The skill researches the library (maintenance status, existing OTel instrumentation, async model), reads all prior proposals and `LEARNINGS.md`, then drafts a proposal. It gates on operator approval before saving.
+
+### 2. Implement TracingChannel support
+
+```
+> use the implement skill for the kafkajs proposal
+```
+
+Takes a proposal from `proposals/` and produces a working implementation with tests. Handles `tracePromise`/`traceCallback` selection, `shouldTrace` guards, Node 18 compat, and Docker-based integration tests.
+
+### 3. Update the tracker
+
+```
+> update the tracker
+```
+
+Fetches the latest status of every upstream PR in `TRACKER.md`, checks for new PRs on libraries with proposals, and recalculates the progress summary.
+
+### 4. Capture review feedback
+
+```
+> capture review feedback from https://github.com/sidorares/node-mysql2/pull/4178
+```
+
+Fetches all review comments from an upstream PR, filters noise, and for each substantive comment presents:
+- What the reviewer is asking
+- Validity assessment (valid / debatable / misunderstanding)
+- Suggested approach (agree, push back with rationale, ask clarification)
+- Whether it contains a generalizable learning
+
+The operator decides which comments to act on and replies themselves. Selected learnings are distilled into `LEARNINGS.md` under themed sections (channel naming, payload shape, API design, Node.js compat, anti-patterns), where they automatically inform the next proposal.
+
+### Files
+
+| File | Purpose |
+|---|---|
+| `proposals/` | One proposal per library, ready to post as GitHub issue/PR body |
+| `TRACKER.md` | Full migration tracker across all 44 instrumentations |
+| `LEARNINGS.md` | Distilled knowledge from reviews and implementation — feeds into new proposals |
+| `skills/propose-tracing-channel-pattern/` | Skill: research + draft a proposal |
+| `skills/implement-tracing-channel-pattern/` | Skill: turn a proposal into a working implementation |
+| `skills/update-tracker/` | Skill: sync tracker with upstream PR status |
+| `skills/capture-review-feedback/` | Skill: triage PR review comments with human in the loop |
+
 ## Prior Art
 
 - **undici** (Node core) — the reference implementation, ships TracingChannel support since Node 19.9
