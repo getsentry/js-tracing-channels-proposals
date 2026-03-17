@@ -103,6 +103,134 @@ The payload maps to what OTEL currently extracts via monkey-patching in [`@opent
 
 ---
 
+## How APM Tools Use This
+
+### Today: Monkey-Patching 6 Connection Methods
+
+To instrument tedious today, `@opentelemetry/instrumentation-tedious` uses IITM/RITM to patch 6 separate methods on `Connection.prototype`:
+
+```js
+// Simplified from @opentelemetry/instrumentation-tedious
+
+// 1. Patch connect to track the current database name
+wrap(Connection.prototype, 'connect', original => function patchedConnect(callback) {
+  // Track database changes for span attributes
+  this.on('databaseChange', (newDb) => { this[CURRENT_DB] = newDb; });
+  const span = tracer.startSpan('tedious.connect');
+  return original.call(this, function(err) {
+    if (err) span.setStatus({ code: SpanStatusCode.ERROR });
+    span.end();
+    callback(err);
+  });
+});
+
+// 2. Patch each query method individually
+for (const method of ['execSql', 'execSqlBatch']) {
+  wrap(Connection.prototype, method, original => function patched(request) {
+    const span = tracer.startSpan(request.sqlTextOrProcedure, {
+      attributes: {
+        'db.system': 'mssql',
+        'db.query.text': request.sqlTextOrProcedure,
+        'db.namespace': this[CURRENT_DB],
+        'server.address': this.config.server,
+        'server.port': this.config.options.port,
+      },
+    });
+    // Wrap the original callback to end the span
+    const originalCallback = request.callback;
+    request.callback = function(err, rowCount, rows) {
+      if (err) span.setStatus({ code: SpanStatusCode.ERROR });
+      span.end();
+      originalCallback(err, rowCount, rows);
+    };
+    return original.call(this, request);
+  });
+}
+
+// 3. Patch callProcedure separately (different span naming — procedure name)
+wrap(Connection.prototype, 'callProcedure', original => function patched(request) {
+  const span = tracer.startSpan(request.sqlTextOrProcedure, { /* ... */ });
+  // ... callback wrapping ...
+});
+
+// 4. Patch execBulkLoad (different payload — table name, no SQL)
+wrap(Connection.prototype, 'execBulkLoad', original => function patched(bulkLoad, rows) {
+  const span = tracer.startSpan(bulkLoad.table, { /* ... */ });
+  // ... callback wrapping ...
+});
+
+// 5. Patch prepare and execute (prepared statement lifecycle)
+wrap(Connection.prototype, 'prepare', original => function patched(request) { /* ... */ });
+wrap(Connection.prototype, 'execute', original => function patched(request, values) { /* ... */ });
+```
+
+Each patch must independently handle callback wrapping, database name tracking (via `databaseChange` events), and error handling. The OTel plugin also includes version-specific logic for how tedious structures its internal request objects.
+
+### With TracingChannel: Subscribe to Structured Events
+
+```js
+const dc = require('node:diagnostics_channel');
+
+// Subscribe to SQL queries (execSql + execSqlBatch)
+dc.tracingChannel('tedious:query').subscribe({
+  start(ctx) {
+    ctx.span = tracer.startSpan(ctx.query, {
+      attributes: {
+        'db.system': 'mssql',
+        'db.query.text': ctx.query,
+        'db.namespace': ctx.database,
+        'server.address': ctx.serverAddress,
+        'server.port': ctx.serverPort,
+      },
+    });
+  },
+  asyncEnd(ctx) {
+    ctx.span?.end();
+  },
+  error(ctx) {
+    ctx.span?.setStatus({ code: SpanStatusCode.ERROR, message: ctx.error?.message });
+    ctx.span?.recordException(ctx.error);
+  },
+});
+
+// Subscribe to stored procedures — different span naming (procedure name)
+dc.tracingChannel('tedious:callProcedure').subscribe({
+  start(ctx) {
+    ctx.span = tracer.startSpan(ctx.procedure, {
+      attributes: {
+        'db.system': 'mssql',
+        'db.operation.name': ctx.procedure,
+        'db.namespace': ctx.database,
+        'server.address': ctx.serverAddress,
+        'server.port': ctx.serverPort,
+      },
+    });
+  },
+  asyncEnd(ctx) { ctx.span?.end(); },
+  error(ctx) { ctx.span?.setStatus({ code: SpanStatusCode.ERROR }); },
+});
+
+// Subscribe to bulk loads, prepared statements, connect — same pattern
+dc.tracingChannel('tedious:bulkLoad').subscribe({ /* start, asyncEnd, error */ });
+dc.tracingChannel('tedious:prepare').subscribe({ /* start, asyncEnd, error */ });
+dc.tracingChannel('tedious:execute').subscribe({ /* start, asyncEnd, error */ });
+dc.tracingChannel('tedious:connect').subscribe({ /* start, asyncEnd, error */ });
+```
+
+**What changes for APM vendors:**
+
+| Concern | Monkey-patching (today) | TracingChannel (proposed) |
+|---|---|---|
+| **Setup** | Must intercept module load via IITM/RITM before first `require('tedious')` | Subscribe to `diagnostics_channel` at any time — no ordering constraint |
+| **Scope** | Patch 6 methods on `Connection.prototype` + `connect` for DB tracking | Subscribe to 6 channels |
+| **Context propagation** | Manual callback wrapping to carry spans through tedious's callback model | Built-in — TracingChannel propagates `AsyncLocalStorage` context automatically |
+| **Database tracking** | Must listen to `databaseChange` events + store current DB on connection | Tedious provides current `database` in each channel context |
+| **Callback wrapping** | Must replace `request.callback` on every patched method | Not needed — TracingChannel's `traceCallback` handles this |
+| **Version coupling** | Depends on `Connection.prototype` method signatures and `Request` internals | Stable channel contract — tedious can refactor internals freely |
+| **Runtime support** | Node.js only (IITM/RITM don't work on Bun/Deno) | Any runtime with `diagnostics_channel` support |
+
+---
+
 ## Implementation Notes
 
 ### Callback-Based Async Model

@@ -102,6 +102,127 @@ Plain `diagnostics_channel` (fire-and-forget, no async lifecycle):
 
 ---
 
+## How APM Tools Use This
+
+### Today: Monkey-Patching Query Builders and Runners
+
+To instrument Knex today, `@opentelemetry/instrumentation-knex` uses IITM/RITM to intercept the module and patch internals:
+
+```js
+// Simplified from @opentelemetry/instrumentation-knex
+
+// 1. Patch query builder creation to capture the caller's async context
+wrap(Client.prototype, 'queryBuilder', original => function patchedQueryBuilder() {
+  const builder = original.apply(this, arguments);
+  // Store the caller's context on the builder — without this,
+  // the span created during query execution would be orphaned
+  // because pool acquisition runs in a different async context
+  builder[STORED_CONTEXT] = api.context.active();
+  return builder;
+});
+
+// 2. Patch schema builder for the same context capture
+wrap(Client.prototype, 'schemaBuilder', original => function patchedSchemaBuilder() {
+  const builder = original.apply(this, arguments);
+  builder[STORED_CONTEXT] = api.context.active();
+  return builder;
+});
+
+// 3. Patch raw() for context capture
+wrap(Client.prototype, 'raw', original => function patchedRaw() {
+  const raw = original.apply(this, arguments);
+  raw[STORED_CONTEXT] = api.context.active();
+  return raw;
+});
+
+// 4. Patch Runner.query() — the actual execution point
+wrap(Runner.prototype, 'query', original => function patchedQuery() {
+  const parentContext = this.builder?.[STORED_CONTEXT] ?? api.context.active();
+  return context.with(parentContext, () => {
+    const span = tracer.startSpan(`knex.${this.builder?._method ?? 'raw'}`, {
+      attributes: {
+        'db.operation.name': this.builder?._method,
+        'db.sql.table': this.builder?._single?.table,
+        'db.query.text': this.query?.sql,
+        'db.namespace': this.client?.connectionSettings?.database,
+        // ... more attributes ...
+      },
+    });
+    return original.apply(this, arguments)
+      .then(result => { span.end(); return result; })
+      .catch(err => { span.setStatus({ code: SpanStatusCode.ERROR }); span.end(); throw err; });
+  });
+});
+```
+
+This approach requires patching 4 separate methods just to capture async context correctly through pool acquisition — the core complexity that Knex-level TracingChannel eliminates.
+
+### With TracingChannel: Subscribe to Structured Events
+
+```js
+const dc = require('node:diagnostics_channel');
+
+// Subscribe to query execution
+dc.tracingChannel('knex:query').subscribe({
+  start(ctx) {
+    ctx.span = tracer.startSpan(`${ctx.method} ${ctx.table}`, {
+      attributes: {
+        'db.system': 'postgresql',  // or mysql, sqlite, etc.
+        'db.operation.name': ctx.method,
+        'db.sql.table': ctx.table,
+        'db.query.text': ctx.query,
+        'db.namespace': ctx.database,
+        'server.address': ctx.serverAddress,
+        'server.port': ctx.serverPort,
+      },
+    });
+  },
+  asyncEnd(ctx) {
+    ctx.span?.end();
+  },
+  error(ctx) {
+    ctx.span?.setStatus({ code: SpanStatusCode.ERROR, message: ctx.error?.message });
+    ctx.span?.recordException(ctx.error);
+  },
+});
+
+// Subscribe to transaction lifecycle
+dc.tracingChannel('knex:transaction').subscribe({
+  start(ctx) {
+    ctx.span = tracer.startSpan('transaction', {
+      attributes: { 'knex.transaction.id': ctx.transactionId },
+    });
+  },
+  asyncEnd(ctx) { ctx.span?.end(); },
+  error(ctx) { ctx.span?.setStatus({ code: SpanStatusCode.ERROR }); },
+});
+
+// Subscribe to pool acquisition
+dc.tracingChannel('knex:pool:acquire').subscribe({
+  start(ctx) {
+    ctx.span = tracer.startSpan('pool.acquire', {
+      attributes: { 'server.address': ctx.serverAddress, 'server.port': ctx.serverPort },
+    });
+  },
+  asyncEnd(ctx) { ctx.span?.end(); },
+  error(ctx) { ctx.span?.setStatus({ code: SpanStatusCode.ERROR }); },
+});
+```
+
+**What changes for APM vendors:**
+
+| Concern | Monkey-patching (today) | TracingChannel (proposed) |
+|---|---|---|
+| **Setup** | Must intercept module load via IITM/RITM before first `require('knex')` | Subscribe to `diagnostics_channel` at any time — no ordering constraint |
+| **Scope** | Patch 4 methods (`queryBuilder`, `schemaBuilder`, `raw`, `Runner.query`) | Subscribe to 3 channels + 1 plain channel |
+| **Context propagation** | Manual `STORED_CONTEXT` symbol on builders + `context.with()` restore | Built-in — TracingChannel propagates `AsyncLocalStorage` context through pool acquisition automatically |
+| **Pool visibility** | None — pool wait time is invisible | `knex:pool:acquire` tracks pool wait as its own span |
+| **Transaction visibility** | None — individual queries appear unrelated | `knex:transaction` wraps the full BEGIN→COMMIT/ROLLBACK lifecycle |
+| **Version coupling** | Depends on `Runner.prototype.query`, `Client.prototype.queryBuilder` existing | Stable channel contract — Knex can refactor internals freely |
+| **Runtime support** | Node.js only (IITM/RITM don't work on Bun/Deno) | Any runtime with `diagnostics_channel` support |
+
+---
+
 ## Implementation Notes
 
 ### Insertion Points

@@ -34,7 +34,7 @@ These currently depend on OTel's monkey-patching infrastructure (IITM/RITM).
 | MySQL | `mysql` | `packages/node/src/integrations/tracing/mysql.ts` | — | — | ⬜ Not started |
 | MySQL2 | `mysql2` | `packages/node/src/integrations/tracing/mysql2.ts` | [node-mysql2#4174](https://github.com/sidorares/node-mysql2/issues/4174) | [node-mysql2#4178](https://github.com/sidorares/node-mysql2/pull/4178) | ✅ **Merged** (2026-03-15) |
 | MongoDB | `mongodb` | `packages/node/src/integrations/tracing/mongo.ts` | [NODE-7472](https://jira.mongodb.org/browse/NODE-7472) | — | 💬 Issue opened |
-| Mongoose | `mongoose` | `packages/node/src/integrations/tracing/mongoose.ts` | — | — | ⬜ Not started |
+| Mongoose | `mongoose` | `packages/node/src/integrations/tracing/mongoose.ts` | [mongoose#16105](https://github.com/Automattic/mongoose/issues/16105) | — | 💬 Issue opened |
 | Redis | `redis` | `packages/node/src/integrations/tracing/redis.ts` | [node-redis#2590](https://github.com/redis/node-redis/issues/2590) | [node-redis#3195](https://github.com/redis/node-redis/pull/3195) | 🟡 PR open — approved by Qard + tlhunter |
 | IORedis | `ioredis` | `packages/node/src/integrations/tracing/redis.ts` | — | [ioredis#2089](https://github.com/redis/ioredis/pull/2089) | 🟡 PR open — contributor acknowledged, pending review |
 | Tedious (MSSQL) | `tedious` | `packages/node/src/integrations/tracing/tedious.ts` | [tedious#1727](https://github.com/tediousjs/tedious/issues/1727) | — | 💬 Issue opened |
@@ -117,7 +117,7 @@ Core logic is ours — only OTel base classes need swapping.
 
 | Category | Total | ✅ Merged | 🟡 PR Open | 💬 In Discussion | ⬜ Not Started |
 |---|---|---|---|---|---|
-| OTel-provided | 24 | 1 (mysql2) | 3 (pg, redis, ioredis) | 4 (mongodb, tedious, express, knex) | 16 |
+| OTel-provided | 24 | 1 (mysql2) | 3 (pg, redis, ioredis) | 5 (mongodb, tedious, express, knex, mongoose) | 15 |
 | Sentry-built | 13 | 0 | 0 | 0 | 13 |
 | Other (non-Sentry) | 7 | 5 | 1 (db0) | 1 (elysia) | 0 |
-| **Total** | **44** | **6** | **4** | **5** | **29** |
+| **Total** | **44** | **6** | **4** | **6** | **28** |

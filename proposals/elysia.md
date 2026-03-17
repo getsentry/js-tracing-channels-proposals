@@ -110,26 +110,79 @@ The `onError` lifecycle phase is also traced as its own execution, so APMs see b
 
 ---
 
-## How `@elysiajs/opentelemetry` Would Migrate
+## How APM Tools Use This
 
-The first-party OTel plugin currently uses two mechanisms:
+### Today: First-Party Plugin with `.wrap()` + `.trace()` (~900 LOC)
 
-```
-Current:
-  .wrap()                    → Root span + async context propagation
-  .trace({ as: 'global' })  → Lifecycle child spans (via inspect() helper)
-
-After TracingChannel:
-  subscribe('elysia:request') → Root span, lifecycle child spans, async context
-                                 — all from a single subscription
-```
-
-The subscriber creates spans based on the context fields:
+Elysia has no standard OTel instrumentation — instead, the first-party `@elysiajs/opentelemetry` plugin uses Elysia's own APIs:
 
 ```ts
-import { trace, SpanKind, SpanStatusCode } from '@opentelemetry/api';
+// Simplified from @elysiajs/opentelemetry (~900 LOC)
 
-channel.subscribe({
+const app = new Elysia()
+  // 1. .wrap() — intercepts the entire request handler to create a root span
+  //    and establish OTel async context for the full request lifecycle
+  .wrap(async (next, ctx) => {
+    const span = tracer.startSpan(`${ctx.request.method} ${ctx.route}`, {
+      kind: SpanKind.SERVER,
+      attributes: {
+        'http.request.method': ctx.request.method,
+        'http.route': ctx.route,
+        'url.full': ctx.request.url,
+      },
+    });
+    return context.with(trace.setSpan(context.active(), span), async () => {
+      try {
+        const result = await next(ctx);
+        span.setAttribute('http.response.status_code', ctx.set.status);
+        span.end();
+        return result;
+      } catch (err) {
+        span.setStatus({ code: SpanStatusCode.ERROR });
+        span.end();
+        throw err;
+      }
+    });
+  })
+  // 2. .trace({ as: 'global' }) — creates child spans for EVERY lifecycle phase
+  //    using an inspect() helper that iterates over hook functions
+  .trace({ as: 'global' }, (ctx) => {
+    // For each lifecycle phase: onRequest, onParse, onBeforeHandle, handle, etc.
+    inspect(ctx.onRequest, 'onRequest');
+    inspect(ctx.onParse, 'onParse');
+    inspect(ctx.onBeforeHandle, 'onBeforeHandle');
+    inspect(ctx.handle, 'handle');
+    inspect(ctx.onAfterHandle, 'onAfterHandle');
+    inspect(ctx.onAfterResponse, 'onAfterResponse');
+    inspect(ctx.onError, 'onError');
+  });
+
+// The inspect() helper (~100 LOC) iterates over each hook in a phase,
+// creates a child span, and manually tracks begin/end/elapsed via
+// .onEvent() and .onStop() callbacks.
+function inspect(phase, name) {
+  for (const fn of phase) {
+    fn.onEvent(({ begin }) => {
+      const span = tracer.startSpan(`${name}: ${fn.name}`);
+      fn[SPAN_SYMBOL] = span;
+    });
+    fn.onStop(({ end, error }) => {
+      const span = fn[SPAN_SYMBOL];
+      if (error) span?.setStatus({ code: SpanStatusCode.ERROR });
+      span?.end();
+    });
+  }
+}
+```
+
+This approach requires both `.wrap()` (for root span + async context) and `.trace()` (for per-phase child spans), with manual span storage via symbols and an `inspect()` helper that iterates over lifecycle hooks. It's tightly coupled to Elysia's `.trace()` internals and cannot work on any other framework.
+
+### With TracingChannel: Subscribe to Structured Events
+
+```ts
+const dc = require('node:diagnostics_channel');
+
+dc.tracingChannel('elysia:request').subscribe({
   start(ctx) {
     const tracer = trace.getTracer('elysia');
     const spanName = ctx.type === 'handler'
@@ -144,10 +197,8 @@ channel.subscribe({
         'elysia.lifecycle': ctx.lifecycle,
       },
     });
-  },
-  error(ctx) {
-    ctx.span?.setStatus({ code: SpanStatusCode.ERROR, message: ctx.error?.message });
-    ctx.span?.recordException(ctx.error);
+    // TracingChannel automatically propagates this span as the active context —
+    // lifecycle phases nest naturally via async context, no manual .wrap() needed
   },
   asyncEnd(ctx) {
     if (ctx.type === 'handler') {
@@ -155,10 +206,25 @@ channel.subscribe({
     }
     ctx.span?.end();
   },
+  error(ctx) {
+    ctx.span?.setStatus({ code: SpanStatusCode.ERROR, message: ctx.error?.message });
+    ctx.span?.recordException(ctx.error);
+  },
 });
 ```
 
-This replaces ~900 LOC of `.wrap()` + `.trace()` + `inspect()` + manual context threading with a single TracingChannel subscription. The plugin becomes dramatically simpler while gaining standard async context propagation for free.
+This replaces ~900 LOC of `.wrap()` + `.trace()` + `inspect()` + manual context threading with a single TracingChannel subscription.
+
+**What changes for APM vendors:**
+
+| Concern | `@elysiajs/opentelemetry` (today) | TracingChannel (proposed) |
+|---|---|---|
+| **Setup** | Must use Elysia-specific `.wrap()` + `.trace({ as: 'global' })` APIs | Subscribe to `diagnostics_channel` — standard Node.js API |
+| **Scope** | ~900 LOC plugin with `inspect()` helper iterating lifecycle hooks | Single channel subscription |
+| **Context propagation** | Manual `context.with()` in `.wrap()` to establish root span context | Built-in — TracingChannel propagates `AsyncLocalStorage` context through lifecycle phases automatically |
+| **Span nesting** | Must manually correlate root span (`.wrap()`) with child spans (`.trace()`) | Automatic — each `tracePromise` call nests via async context |
+| **Portability** | Elysia-only — code cannot be reused for h3, Express, Fastify | Standard pattern — same subscriber shape works across any framework with TracingChannel |
+| **Runtime support** | Works on Bun (Elysia-native) but not via standard OTel auto-instrumentation | Works on any runtime with `diagnostics_channel` — including Bun once it adds support |
 
 ---
 
