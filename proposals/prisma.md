@@ -17,7 +17,16 @@ However, this architecture is **tightly coupled to the OpenTelemetry SDK**. `@pr
 1. Adopting the full OTel SDK just to get Prisma spans, or
 2. Reimplementing the `TracingHelper` contract privately (fragile, undocumented)
 
-`TracingChannel` solves this by providing a **vendor-neutral, platform-level** primitive. Any APM tool — OTel-based or not — can subscribe to structured lifecycle events without depending on any tracing SDK.
+#### Why reimplementing the contract isn't viable
+
+A natural question is: can a non-OTel APM tool simply implement the `TracingHelper` interface from `@prisma/instrumentation-contract` and set the global helper itself? In theory yes, but in practice this path has significant drawbacks:
+
+- **Undocumented internal contract.** `@prisma/instrumentation-contract` is a shared internal package between `@prisma/client` and `@prisma/instrumentation` within the Prisma monorepo. It's not documented as a public API — its shape can change in any release without notice.
+- **OTel-shaped types.** The `TracingHelper.runInChildSpan()` interface takes and returns OTel-shaped span objects. A non-OTel APM tool would need to either shim the OTel `Span` interface or pull in `@opentelemetry/api` anyway — at which point you've gained nothing over using `@prisma/instrumentation` directly.
+- **Global singleton — one winner.** The contract works by setting a single global `ActiveTracingHelper`. If a user has both `@prisma/instrumentation` (for OTel export) and a custom Sentry implementation, only one wins. There's no way for multiple APM tools to coexist.
+- **Still requires initialization ordering.** The global helper must be set before `new PrismaClient()` is constructed — the same timing constraint that TracingChannel eliminates.
+
+`TracingChannel` solves all of these by providing a **vendor-neutral, platform-level** primitive. Any APM tool — OTel-based or not — can subscribe to structured lifecycle events without depending on any tracing SDK. Multiple subscribers coexist by design, there's no initialization ordering constraint, and the contract is `diagnostics_channel` itself — a stable Node.js API.
 
 ### Two integration paths
 
