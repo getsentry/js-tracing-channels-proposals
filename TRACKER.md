@@ -22,7 +22,7 @@ These currently depend on OTel's monkey-patching infrastructure (IITM/RITM).
 |---|---|---|---|---|---|
 | HTTP | `http`/`https` (Node built-in) | `packages/node/src/integrations/http.ts` | — | — | ⬜ Not started |
 | Express | `express` | `packages/node/src/integrations/tracing/express.ts` | [express#6353](https://github.com/expressjs/express/issues/6353) | [pillarjs/router#96](https://github.com/pillarjs/router/pull/96) (Qard) | 💬 Reached out to help spec & unify |
-| Fastify | `fastify` | `packages/node/src/integrations/tracing/fastify/` | — | — | ⬜ Not started |
+| Fastify | `fastify` | `packages/node/src/integrations/tracing/fastify/` | — | — | ✅ Ships TracingChannel natively (`tracing:fastify.request.handler`) |
 | Koa | `koa` | `packages/node/src/integrations/tracing/koa.ts` | — | — | ⬜ Not started |
 | Hapi | `@hapi/hapi` | `packages/node/src/integrations/tracing/hapi/` | — | — | ⬜ Not started |
 | Connect | `connect` | `packages/node/src/integrations/tracing/connect.ts` | — | — | ⬜ Not started |
@@ -46,7 +46,7 @@ These currently depend on OTel's monkey-patching infrastructure (IITM/RITM).
 
 | Integration | Target Package | Sentry Location | Upstream Issue | Upstream PR | Status |
 |---|---|---|---|---|---|
-| GraphQL | `graphql` | `packages/node/src/integrations/tracing/graphql.ts` | — | — | ⬜ Not started |
+| GraphQL | `graphql` | `packages/node/src/integrations/tracing/graphql.ts` | [graphql-js#4629](https://github.com/graphql/graphql-js/issues/4629) | — | 💬 Issue opened |
 
 ### Message Queues
 
@@ -118,7 +118,7 @@ Core logic is ours — only OTel base classes need swapping.
 
 | Category | Total | ✅ Merged | 🟡 PR Open | 💬 In Discussion | ⬜ Not Started |
 |---|---|---|---|---|---|
-| OTel-provided | 24 | 1 (mysql2) | 3 (pg, redis, ioredis) | 6 (mongodb, tedious, express, knex, mongoose, prisma) | 14 |
+| OTel-provided | 24 | 2 (mysql2, fastify) | 3 (pg, redis, ioredis) | 7 (mongodb, tedious, express, knex, mongoose, prisma, graphql) | 12 |
 | Sentry-built | 13 | 0 | 0 | 0 | 13 |
 | Other (non-Sentry) | 7 | 5 | 1 (db0) | 1 (elysia) | 0 |
-| **Total** | **44** | **6** | **4** | **7** | **27** |
+| **Total** | **44** | **7** | **4** | **8** | **25** |
