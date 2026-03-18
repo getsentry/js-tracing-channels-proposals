@@ -1,6 +1,7 @@
 # @prisma/client: `TracingChannel` Proposal
 
-> **Status:** Draft (not yet submitted)
+> **Issue:** [prisma/prisma#29353](https://github.com/prisma/prisma/issues/29353)
+> **Status:** 💬 Issue opened
 
 ---
 

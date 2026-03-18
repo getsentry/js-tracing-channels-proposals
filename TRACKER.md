@@ -40,7 +40,7 @@ These currently depend on OTel's monkey-patching infrastructure (IITM/RITM).
 | IORedis | `ioredis` | `packages/node/src/integrations/tracing/redis.ts` | — | [ioredis#2089](https://github.com/redis/ioredis/pull/2089) | 🟡 PR open — contributor acknowledged, pending review |
 | Tedious (MSSQL) | `tedious` | `packages/node/src/integrations/tracing/tedious.ts` | [tedious#1727](https://github.com/tediousjs/tedious/issues/1727) | — | 💬 Issue opened |
 | Knex | `knex` | `packages/node/src/integrations/tracing/knex.ts` | [knex#6394](https://github.com/knex/knex/issues/6394) | — | 💬 Issue opened |
-| Prisma | `prisma` | `packages/node/src/integrations/tracing/prisma.ts` | — | — | 📝 Proposal drafted |
+| Prisma | `prisma` | `packages/node/src/integrations/tracing/prisma.ts` | [prisma#29353](https://github.com/prisma/prisma/issues/29353) | — | 💬 Issue opened |
 
 ### GraphQL
 
