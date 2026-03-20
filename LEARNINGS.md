@@ -85,6 +85,10 @@ For libraries targeting non-Node runtimes (Bun, Deno), wrap the whole thing in `
 
 At minimum, skip TracingChannel tests when `dc.tracingChannel` doesn't exist (Node 16). On Node 18, TracingChannel exists but has quirks — may need stricter gating if tests hit unsubscribe bugs. Plain `dc.channel()` works fine on Node 16+, so only gate TracingChannel-specific tests.
 
+### tracePromise wrapper causes unhandled rejections when return value is discarded
+
+`tracePromise` returns a wrapper promise that re-rejects on error via `.then(onSuccess, onError)` where the error handler re-throws. If the caller discards this return value (e.g., pipeline/batch paths where individual command results are collected separately), the wrapper promise rejects with nobody listening — causing an `unhandledRejection` event that can crash the process under `--unhandled-rejections=throw`. The fix is to add `.catch(noop)` on the wrapper at the call site. Callers that `await`/`return` the traced promise are unaffected — they see the rejection through their own `.then()` chain. Discovered via [ioredis#2089 review](https://github.com/redis/ioredis/pull/2089/comments#discussion_r2966664588); same pattern was already handled in mysql2#4178.
+
 ### tracePromise breaks custom Promise implementations
 
 `tracePromise` returns a native Promise. If a library supports custom Promise implementations (e.g., `{ Promise: bluebird }`), `tracePromise` silently replaces the user's Promise type, breaking `instanceof` checks. Use `traceCallback` inside the user's Promise constructor instead.

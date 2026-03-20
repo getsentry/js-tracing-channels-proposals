@@ -118,6 +118,8 @@ function shouldTrace(channel: TracingChannel<any> | undefined): channel is Traci
   return !!channel && channel.hasSubscribers !== false;
 }
 
+const noop = () => {};
+
 const commandChannel: TracingChannel<CommandContext> | undefined = hasTracingChannel
   ? dc.tracingChannel('<package>:command')
   : undefined;
@@ -127,7 +129,13 @@ export function traceCommand<T>(
   contextFactory: () => CommandContext
 ): Promise<T> {
   if (shouldTrace(commandChannel)) {
-    return commandChannel.tracePromise(fn, contextFactory());
+    // tracePromise returns a wrapper promise that re-rejects on error.
+    // Silence the wrapper to prevent unhandled rejections when callers
+    // (e.g. Pipeline) discard the return value. Callers that await this
+    // promise still see the rejection through their own .then() chain.
+    const traced = commandChannel.tracePromise(fn, contextFactory());
+    traced.catch(noop);
+    return traced;
   }
   return fn();
 }
@@ -148,7 +156,9 @@ export { CommandTraceContext, ConnectTraceContext } from './tracing';
 
 1. **Use `tracePromise`** for async operations. It handles the full lifecycle: `start` → `end` → `asyncStart` → `asyncEnd`/`error`.
 
-2. **`tracePromise` returns a native Promise.** If the library supports custom Promise implementations (e.g. `{ Promise: bluebird }`), do NOT use `tracePromise` — it will silently replace the user's Promise type with a native one, breaking `instanceof` checks. Use `traceCallback` inside the user's Promise constructor instead:
+2. **`tracePromise` wrapper causes unhandled rejections when discarded.** `tracePromise` returns a wrapper promise that re-rejects on error. If any caller discards this return value (pipeline/batch paths, fire-and-forget sends), the wrapper rejects with nobody listening — causing `unhandledRejection` that can crash under `--unhandled-rejections=throw`. **Always add `.catch(noop)` on the wrapper** at the trace helper level (see the `traceCommand` example above). Callers that `await`/`return` the traced promise are unaffected — they see the rejection through their own `.then()` chain. When auditing call sites, check every place the traced function is called and verify the return value is always consumed; if even one path discards it, the `.catch(noop)` is required.
+
+3. **`tracePromise` returns a native Promise.** If the library supports custom Promise implementations (e.g. `{ Promise: bluebird }`), do NOT use `tracePromise` — it will silently replace the user's Promise type with a native one, breaking `instanceof` checks. Use `traceCallback` inside the user's Promise constructor instead:
    ```js
    // BAD — returns native Promise, breaks custom Promise support
    if (shouldTrace(channel)) {
@@ -167,9 +177,9 @@ export { CommandTraceContext, ConnectTraceContext } from './tracing';
    })
    ```
 
-3. **`traceCallback` requires an actual callback.** If the code path has no callback (e.g. event-emitter-style queries, fire-and-forget operations), do NOT call `traceCallback` — it will crash when trying to wrap `undefined`. Always guard: `if (shouldTrace(channel) && callback)`.
+4. **`traceCallback` requires an actual callback.** If the code path has no callback (e.g. event-emitter-style queries, fire-and-forget operations), do NOT call `traceCallback` — it will crash when trying to wrap `undefined`. Always guard: `if (shouldTrace(channel) && callback)`.
 
-4. **Accept a context factory, not an eager object.** The factory is only called when `hasSubscribers` is true. This guarantees zero-cost when no APM is listening:
+5. **Accept a context factory, not an eager object.** The factory is only called when `hasSubscribers` is true. This guarantees zero-cost when no APM is listening:
    ```ts
    // GOOD — zero allocation when no subscribers
    traceCommand(fn, () => buildContext(args))
@@ -178,9 +188,9 @@ export { CommandTraceContext, ConnectTraceContext } from './tracing';
    traceCommand(fn, buildContext(args))
    ```
 
-5. **Do NOT copy/snapshot args.** `diagnostics_channel` intentionally allows subscribers to mutate context. APMs may need to inject distributed trace headers or annotate the context. Pass args by reference.
+6. **Do NOT copy/snapshot args.** `diagnostics_channel` intentionally allows subscribers to mutate context. APMs may need to inject distributed trace headers or annotate the context. Pass args by reference.
 
-6. **Handle IPC/Unix sockets.** When the connection uses a Unix domain socket (`path`), emit the path as `serverAddress` with `undefined` for `serverPort`. Never silently default to `localhost:6379` (or equivalent):
+7. **Handle IPC/Unix sockets.** When the connection uses a Unix domain socket (`path`), emit the path as `serverAddress` with `undefined` for `serverPort`. Never silently default to `localhost:6379` (or equivalent):
    ```ts
    if (options && 'path' in options) {
      return { serverAddress: options.path, serverPort: undefined };
@@ -188,11 +198,11 @@ export { CommandTraceContext, ConnectTraceContext } from './tracing';
    return { serverAddress: options?.host ?? 'localhost', serverPort: options?.port ?? DEFAULT_PORT };
    ```
 
-7. **Trace at the single funnel point.** Find the one method all operations flow through and instrument there. Don't scatter trace calls across the codebase.
+8. **Trace at the single funnel point.** Find the one method all operations flow through and instrument there. Don't scatter trace calls across the codebase.
 
-8. **For batched operations that bypass the main path**, add tracing directly in the batch execution method. Each individual operation in a batch gets its own trace event (not one wrapper trace), with additional `batchMode` and `batchSize` fields. This matches how OTEL instruments batches.
+9. **For batched operations that bypass the main path**, add tracing directly in the batch execution method. Each individual operation in a batch gets its own trace event (not one wrapper trace), with additional `batchMode` and `batchSize` fields. This matches how OTEL instruments batches.
 
-9. **Connection tracing covers initial connect only.** Don't trace reconnections — OTEL doesn't, and reconnections are an internal implementation detail.
+10. **Connection tracing covers initial connect only.** Don't trace reconnections — OTEL doesn't, and reconnections are an internal implementation detail.
 
 ## Step 4: Determine scope using OTEL as north star
 
@@ -313,6 +323,7 @@ docker stop test-db && docker rm test-db
 - [ ] Tests gated on `TracingChannel` availability (skip on Node 16; may need stricter gating if Node 18 tests hit unsubscribe bugs)
 - [ ] Tests use dynamic connection info from test infra (no hardcoded ports)
 - [ ] `traceCallback` guarded against undefined callbacks (`shouldTrace(ch) && callback`)
+- [ ] `tracePromise` wrapper has `.catch(noop)` to prevent unhandled rejections when callers discard the return value
 - [ ] `tracePromise` not used where custom Promise types must be preserved (use `traceCallback` inside user's Promise constructor instead)
 - [ ] **Lint passes on all changed files**
 - [ ] **FULL test suite (unit + integration) passes locally with Docker**
