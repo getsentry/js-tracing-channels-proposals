@@ -120,6 +120,8 @@ The operator decides which comments to act on and replies themselves. Selected l
 
 ## Related
 
+- [e18e ecosystem issue](https://github.com/e18e/ecosystem-issues/issues/255) — umbrella issue for driving TracingChannel adoption across the ecosystem
+- [untracing](https://github.com/unjs/untracing) — shared utility for library authors to standardize TracingChannel usage
 - [Node.js `diagnostics_channel` docs](https://nodejs.org/api/diagnostics_channel.html)
 - [Sentry JS SDK](https://github.com/getsentry/sentry-javascript)
 - [OpenTelemetry JS](https://github.com/open-telemetry/opentelemetry-js)

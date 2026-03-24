@@ -114,6 +114,11 @@ Core logic is ours — only OTel base classes need swapping.
 | db0 | [sentry-javascript#18023](https://github.com/getsentry/sentry-javascript/issues/18023) | [unjs/db0#193](https://github.com/unjs/db0/pull/193) | 🟡 PR open |
 | Elysia | — | [elysiajs/elysia#1809](https://github.com/elysiajs/elysia/issues/1809) | 💬 In discussion |
 
+## Ecosystem Coordination
+
+- [e18e ecosystem issue #255](https://github.com/e18e/ecosystem-issues/issues/255) — umbrella issue for driving TracingChannel adoption
+- [untracing](https://github.com/unjs/untracing) — shared utility for library authors to standardize TracingChannel usage
+
 ## Progress Summary
 
 | Category | Total | ✅ Merged | 🟡 PR Open | 💬 In Discussion | ⬜ Not Started |
