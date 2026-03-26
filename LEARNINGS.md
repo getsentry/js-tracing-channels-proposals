@@ -144,3 +144,63 @@ The `shouldTrace` helper activates tracing unconditionally on Node 18, so even u
 ### Don't mock the database in integration tests
 
 Run integration tests against real services via Docker. Mock/prod divergence has masked broken implementations in the past.
+
+## Argument Sanitization
+
+### Sanitize at the emitter, not the consumer
+
+Libraries should sanitize command arguments before emitting them on channels. Consumers (APMs) shouldn't need to know which commands carry secrets. Use `?` placeholders for redacted values — matches the SQL parameterization convention used by `db.query.text` across OTel, Sentry, and Datadog.
+
+### Use OTel's redis-common serialization rules as baseline
+
+The `@opentelemetry/redis-common` package (Apache 2.0) defines a command → arg-count map controlling how many args to serialize. Adopt this as the starting point and let library maintainers tighten it. Commands like `AUTH` fall to the default (0 args = command name only), which is safe by accident but correct.
+
+### Sanitize all emission points, not just TracingChannel
+
+Point event channels (like `COMMAND_REPLY`) also carry args. If you sanitize TracingChannel context but forget point events, sensitive data leaks through the other path. Audit every `publish()` call that includes args.
+
+## Architecture
+
+### Describe what's happening, not what to compute
+
+Core code should emit events that describe system state changes ("a command started," "a connection closed," "an error occurred"). Subscribers independently decide what to compute from those events. This eliminates inline metric closures, noop classes, and the coupling between core code and specific observability backends.
+
+### Two functions replace an entire class hierarchy
+
+A generic `trace(channelName, fn, contextFactory)` for async lifecycles and `publish(channelName, factory)` for point events can replace dozens of inline closure methods, noop counterparts, and metric-specific wiring. The channel itself becomes the gating mechanism — no subscribers means zero cost, no noops needed.
+
+### Factory callbacks for zero-cost event emission
+
+Both `trace()` and `publish()` accept factory callbacks instead of pre-built objects. The factory is only called when `hasSubscribers` is true. This prevents object allocation on every command when no APM is listening — the same zero-cost principle as TracingChannel's `hasSubscribers` but extended to point events.
+
+### Channel name map + type map for type safety
+
+Centralize channel names in a `CHANNELS` const map and map them to payload types via `ChannelEvents`/`TracingChannelContextMap` interfaces. Use `TRACE_*` prefix for TracingChannels to distinguish them from point events. Consumers get full type inference at the call site without runtime overhead.
+
+### Cache channel acquisitions
+
+`dc.channel()` and `dc.tracingChannel()` involve internal bookkeeping. Cache the returned objects in a `Map` to avoid re-acquisition on every publish/trace call. This matters when `publish()` or `trace()` is called on every command.
+
+## Pitfalls
+
+### tracePromise floating promises in fire-and-forget paths
+
+Pool wait and pipeline paths create traced promises that nobody awaits. `tracePromise` wraps the inner promise in a separate chain — if it rejects with nobody listening, that's an unhandled rejection. Always `.catch(noop)` on fire-and-forget traced promises.
+
+### Duplicate event emission across call layers
+
+When `sendCommand` is called from `_executeCommand`, both layers can emit the same event (e.g., `COMMAND_REPLY`), causing double-counted metrics. Emit at the outermost layer that has the complete context (transformed reply, parsed args), not at every layer in the call chain.
+
+### Point events must carry enough state for subscribers to act correctly
+
+When converting inline code to channel events, identify implicit state that the original code relied on (e.g., a boolean guard before decrementing a counter). That state must be included in the event payload — subscribers don't have access to the emitter's internal variables.
+
+## Maintainer Relations
+
+### Frame refactors as delivery mechanism changes, not rewrites
+
+When refactoring existing observability code to use channels, emphasize that the domain knowledge (which metrics, which semantic conventions, which error classification) is preserved. What changed is the delivery mechanism — from inline closures to channel subscriptions. This respects the original work and reduces defensiveness.
+
+### Noops disappear as a natural consequence
+
+When all observability flows through channels, noop implementations become unnecessary. If a metric group is disabled, no subscription is created, `hasSubscribers` is false, and the channel is skipped entirely. Zero cost by design, not by maintaining parallel noop code. This is a concrete benefit to communicate — less code to maintain.
