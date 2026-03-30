@@ -163,6 +163,10 @@ Adapt the template based on what you learned in step 1:
 
 Save to `proposals/{package-name}.md` in this repo.
 
+## Style
+
+- **No em dashes.** Never use "—" (em dash) in the proposal. Restructure sentences to use proper punctuation instead (periods, commas, colons, semicolons) depending on context.
+
 ## Output
 
 The final proposal should be:

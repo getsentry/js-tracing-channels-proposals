@@ -86,7 +86,7 @@ Core logic is ours — only OTel base classes need swapping.
 
 | Integration | Target Package | Sentry Location | Upstream Issue | Upstream PR | Status |
 |---|---|---|---|---|---|
-| Hono | `hono` | `packages/node/src/integrations/tracing/hono/` | — | — | ⬜ Not started |
+| Hono | `hono` | `packages/node/src/integrations/tracing/hono/` | [hono#4842](https://github.com/honojs/hono/issues/4842) | — | 💬 Issue opened |
 | Postgres.js | `postgres` | `packages/node/src/integrations/tracing/postgresjs.ts` | — | — | ⬜ Not started |
 | Firebase | `firebase-admin` | `packages/node/src/integrations/tracing/firebase/` | — | — | ⬜ Not started |
 
@@ -124,6 +124,6 @@ Core logic is ours — only OTel base classes need swapping.
 | Category | Total | ✅ Merged | 🟡 PR Open | 💬 In Discussion | ⬜ Not Started |
 |---|---|---|---|---|---|
 | OTel-provided | 24 | 2 (mysql2, fastify) | 4 (pg, redis, ioredis, knex) | 6 (mongodb, tedious, express, mongoose, prisma, graphql) | 11 + 1 📝 (koa) |
-| Sentry-built | 13 | 0 | 0 | 0 | 13 |
+| Sentry-built | 13 | 0 | 0 | 1 (hono) | 12 |
 | Other (non-Sentry) | 7 | 5 | 1 (db0) | 1 (elysia) | 0 |
-| **Total** | **44** | **7** | **5** | **7** | **25** |
+| **Total** | **44** | **7** | **5** | **8** | **24** |
