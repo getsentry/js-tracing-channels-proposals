@@ -61,7 +61,7 @@ These currently depend on OTel's monkey-patching infrastructure (IITM/RITM).
 |---|---|---|---|---|---|
 | DataLoader | `dataloader` | `packages/node/src/integrations/tracing/dataloader.ts` | — | — | ⬜ Not started |
 | Generic Pool | `generic-pool` | `packages/node/src/integrations/tracing/genericPool.ts` | — | — | ⬜ Not started |
-| LRU Memoizer | `lru-memoizer` | `packages/node/src/integrations/tracing/lrumemoizer.ts` | — | — | ⬜ Not started |
+| LRU Memoizer | `lru-memoizer` | `packages/node/src/integrations/tracing/lrumemoizer.ts` | — | — | ⏭️ Skipped — thin wrapper over `lru-cache`, covered by lru-cache TracingChannel work |
 
 ### Filesystem / Fetch
 
