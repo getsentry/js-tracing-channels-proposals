@@ -39,7 +39,7 @@ These currently depend on OTel's monkey-patching infrastructure (IITM/RITM).
 | Redis | `redis` | `packages/node/src/integrations/tracing/redis.ts` | [node-redis#2590](https://github.com/redis/node-redis/issues/2590) | [node-redis#3195](https://github.com/redis/node-redis/pull/3195) | 🟡 PR open — approved by Qard + tlhunter |
 | IORedis | `ioredis` | `packages/node/src/integrations/tracing/redis.ts` | — | [ioredis#2089](https://github.com/redis/ioredis/pull/2089) | 🟡 PR open — contributor acknowledged, pending review |
 | Tedious (MSSQL) | `tedious` | `packages/node/src/integrations/tracing/tedious.ts` | [tedious#1727](https://github.com/tediousjs/tedious/issues/1727) | — | 💬 Issue opened |
-| Knex | `knex` | `packages/node/src/integrations/tracing/knex.ts` | [knex#6394](https://github.com/knex/knex/issues/6394) | — | 💬 Issue opened |
+| Knex | `knex` | `packages/node/src/integrations/tracing/knex.ts` | [knex#6394](https://github.com/knex/knex/issues/6394) | [knex#6410](https://github.com/knex/knex/pull/6410) | 🟡 PR open |
 | Prisma | `prisma` | `packages/node/src/integrations/tracing/prisma.ts` | [prisma#29353](https://github.com/prisma/prisma/issues/29353) | — | 💬 Issue opened |
 
 ### GraphQL
@@ -123,7 +123,7 @@ Core logic is ours — only OTel base classes need swapping.
 
 | Category | Total | ✅ Merged | 🟡 PR Open | 💬 In Discussion | ⬜ Not Started |
 |---|---|---|---|---|---|
-| OTel-provided | 24 | 2 (mysql2, fastify) | 3 (pg, redis, ioredis) | 7 (mongodb, tedious, express, knex, mongoose, prisma, graphql) | 11 + 1 📝 (koa) |
+| OTel-provided | 24 | 2 (mysql2, fastify) | 4 (pg, redis, ioredis, knex) | 6 (mongodb, tedious, express, mongoose, prisma, graphql) | 11 + 1 📝 (koa) |
 | Sentry-built | 13 | 0 | 0 | 0 | 13 |
 | Other (non-Sentry) | 7 | 5 | 1 (db0) | 1 (elysia) | 0 |
-| **Total** | **44** | **7** | **4** | **8** | **25** |
+| **Total** | **44** | **7** | **5** | **7** | **25** |

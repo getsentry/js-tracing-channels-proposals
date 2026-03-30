@@ -1,7 +1,8 @@
 # knex: `TracingChannel` Proposal
 
 > **Issue:** [knex/knex#6394](https://github.com/knex/knex/issues/6394)
-> **Status:** 💬 Issue opened
+> **PR:** [knex/knex#6410](https://github.com/knex/knex/pull/6410)
+> **Status:** 🟡 PR open
 
 ---
 
