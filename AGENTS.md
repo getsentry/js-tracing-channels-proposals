@@ -1,6 +1,6 @@
 # TracingChannel Proposals
 
-This repo contains proposals and PRs for adding Node.js `diagnostics_channel` `TracingChannel` support to popular libraries, replacing monkey-patching (IITM/RITM) with native event subscriptions.
+This repo contains proposals and PRs for adding Node.js `diagnostics_channel` `TracingChannel` support to popular libraries, enabling native observability event subscriptions for all APM tools.
 
 ## Structure
 

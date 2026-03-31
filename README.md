@@ -1,6 +1,6 @@
 # TracingChannel Proposals
 
-Proposals and PRs for adding Node.js [`diagnostics_channel.TracingChannel`](https://nodejs.org/api/diagnostics_channel.html#tracingchannel) support to popular npm libraries — replacing OpenTelemetry's monkey-patching infrastructure (IITM/RITM) with native, zero-overhead event subscriptions.
+Proposals and PRs for adding Node.js [`diagnostics_channel.TracingChannel`](https://nodejs.org/api/diagnostics_channel.html#tracingchannel) support to popular npm libraries, enabling native, zero-overhead observability for all APM tools (including OpenTelemetry, Sentry, Datadog, and others).
 
 ## Why
 

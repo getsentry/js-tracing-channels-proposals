@@ -53,7 +53,7 @@ Node.js ships [`diagnostics_channel.TracingChannel`](https://nodejs.org/api/diag
 
 It also handles async context propagation and plays well with existing ecosystems like OTel (albeit with a minor patch for ALS).
 
-When libraries adopt TracingChannel natively, the monkey-patching infrastructure (IITM/RITM + loader hooks) becomes unnecessary for those libraries. Fewer moving parts at runtime, no ESM compatibility issues, and libraries owning their own observability surface instead of having external tools rewrite their internals at load time — reducing the maintenance burden on both sides.
+When libraries adopt TracingChannel natively, all observability tools (including OTel) get a stable, first-party subscription surface. This means fewer moving parts at runtime, no ESM compatibility issues, and libraries owning their own observability surface instead of having external tools rewrite their internals at load time. This reduces the maintenance burden on both sides and benefits the entire o11y ecosystem.
 
 I have been working with @Qard (the creator of TracingChannel) on gauging the ecosystem's appetite for adopting this API. We also started [untracing](https://github.com/unjs/untracing) — a shared utility for library authors to standardize channel naming and make adoption easier. We have a private tracker at Sentry but this table illustrates what we've been doing:
 

@@ -15,7 +15,7 @@ Current APM instrumentations use IITM (import-in-the-middle) for ESM and RITM (r
 - **Initialization ordering:** both require instrumentation to be set up before the framework is first `require()`'d / `import`'d. Get the order wrong and instrumentation silently does nothing, which is very hard to debug in production.
 - **Bundling and Externalization:** Users have to ensure their instrumented modules are externalized, which is becoming very difficult to guarantee with more and more frameworks bundling server-side code.
 
-Additionally, **`@opentelemetry/instrumentation-koa` is currently marked as "Unmaintained"** in the OpenTelemetry JS contrib repository. The existing monkey-patching instrumentation is not being actively maintained, which means Koa users relying on OTel for observability are in a precarious position. Native TracingChannel support would eliminate the need for external monkey-patching instrumentation entirely.
+Additionally, **`@opentelemetry/instrumentation-koa` is currently marked as "Unmaintained"** in the OpenTelemetry JS contrib repository. The existing monkey-patching instrumentation is not being actively maintained, which means Koa users relying on OTel for observability are in a precarious position. Native TracingChannel support would give OTel (and all other APM tools) a stable, first-party surface to subscribe to without needing external monkey-patching instrumentation.
 
 If Koa emits structured events through `TracingChannel`, instrumentation libraries become **subscribers**, not **patches**. Each tool listens independently with no ordering concerns, no clobbering, and no internal API dependency.
 

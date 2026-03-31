@@ -1,6 +1,6 @@
 # TracingChannel Migration Tracker
 
-> Replacing OTel monkey-patching (IITM/RITM) with native `diagnostics_channel` `TracingChannel` support.
+> Adding native `diagnostics_channel` `TracingChannel` support to benefit all observability tools, including OTel, Sentry, Datadog, and others.
 > 37 total instrumentations in Sentry JS SDK: 24 OTel-provided + 13 Sentry-built.
 
 | Emoji | Status |
@@ -12,9 +12,9 @@
 | ⬜ | Not started |
 | 🔴 | No go — unmaintained / not viable |
 
-## OTel-Provided (24) — Need Full Rewrite or Drop
+## OTel-Provided (24) — Need Native TracingChannel Support
 
-These currently depend on OTel's monkey-patching infrastructure (IITM/RITM).
+These currently rely on external monkey-patching infrastructure (IITM/RITM) and would benefit from native TracingChannel support.
 
 ### HTTP / Web Frameworks
 
