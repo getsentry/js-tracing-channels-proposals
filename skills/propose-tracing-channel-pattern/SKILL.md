@@ -16,6 +16,7 @@ Read the existing proposals in `proposals/` for examples and patterns:
 | ioredis | `proposals/ioredis.md` | Port of node-redis pattern, IPC/Unix socket support, lowercase batch modes |
 | pg | `proposals/pg.md` | Multi-package (pg + pg-pool), mix of TracingChannel + plain channels for fire-and-forget events |
 | mysql2 | `proposals/mysql2.md` | Separate channels for `query()` vs `execute()` (prepared statements), pool acquisition |
+| consola | `proposals/consola.md` | Logging library using plain `dc.channel().publish()` instead of TracingChannel (point event, not lifecycle) |
 
 **Always read ALL existing proposals before drafting a new one.** They demonstrate the evolving style and increasing sophistication of the proposals. Each new proposal should learn from and reference the previous ones.
 
@@ -71,12 +72,14 @@ pg:query
 pg:connection
 node-redis:command
 ioredis:command
+consola:log
 ```
 
 **Guidelines:**
 - Use the npm package name as prefix (not the GitHub repo name)
 - One TracingChannel per distinct async operation worth tracing
 - Use plain `diagnostics_channel` (not TracingChannel) for fire-and-forget events that don't need async lifecycle tracking (e.g. pool release/remove)
+- **For logging libraries, choose `traceSync` vs plain `publish()` based on whether the core performs measurable work at the instrumentation point.** If the library does significant computation there (e.g. pino's JSON serialization in `asJson`), `traceSync` lets consumers measure that cost. If the core just dispatches to reporters/transports with no heavy work (e.g. consola's `_log()`), plain `channel.publish()` is simpler and sufficient. In both cases, `publish()` and `traceSync` run synchronously in the caller's async context, so log-trace correlation via `AsyncLocalStorage` works either way.
 - Separate channels for operations with meaningfully different semantics (e.g. mysql2's `query` vs `execute` for prepared statements)
 - Don't over-channel — if two operations share the same context shape and lifecycle, consider a single channel with a discriminator field
 
@@ -158,6 +161,7 @@ Adapt the template based on what you learned in step 1:
 - **Connection pools**: add pool-specific channels (acquire, release, remove)
 - **IPC/Unix sockets** (like ioredis): handle `serverAddress` being a path, `serverPort` being undefined
 - **Callback vs promise APIs**: note which async model the TracingChannel wraps
+- **Logging libraries**: Publish the raw log object (not extracted fields) so the channel is forward-compatible. Choose `traceSync` vs plain `publish()` based on whether there's measurable work to wrap (see channel design guidelines above). Most logging libraries already have observation APIs (consola reporters, pino transports, winston transports, bunyan streams). The `diagnostics_channel` proposal is NOT about replacing those. Acknowledge they work. The value prop is: (1) standardized interface across all logging libraries so APMs write one subscriber pattern instead of N library-specific integrations, (2) no dependency on the logger instance (subscribe by channel name globally), (3) consistency with the rest of the instrumented stack if the library ecosystem already uses `diagnostics_channel` for other things.
 
 ### 6. Save the proposal
 

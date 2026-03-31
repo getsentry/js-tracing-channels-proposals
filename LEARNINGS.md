@@ -21,6 +21,19 @@ Separate channels when the span-naming strategy or payload shape differs. Merge 
 
 Database operations (query, connect, pool acquire) are semantically distinct and warrant separate channels. HTTP framework lifecycle phases (onRequest, handle, afterHandle) are stages of the same request — use a single channel with a discriminator field like `lifecycle` rather than N channels for a pipeline.
 
+### Choose traceSync vs plain publish based on whether there's measurable work to wrap
+
+The choice between `TracingChannel.traceSync()` and plain `channel.publish()` for logging libraries depends on whether the core performs measurable work that consumers might care about profiling.
+
+- **pino** uses `traceSync` around its `asJson` serialization function. JSON encoding is real work that adds up under heavy logging. `traceSync` gives consumers start/end timing around serialization, letting APMs answer "how much time is this app spending serializing log lines?" This is why Qard (diagnostics_channel author) considers pino's choice correct.
+- **consola** just dispatches to reporters in its core `_log()`. The actual formatting work happens inside each reporter, not in consola itself. There's no measurable work to wrap, so plain `publish()` is the right fit.
+
+The general rule: if the library performs meaningful computation at the instrumentation point (serialization, encoding, query building), `traceSync` gives consumers visibility into that cost. If the library is just dispatching/routing with no significant work, plain `publish()` avoids unnecessary machinery. In both cases, the subscriber runs synchronously in the caller's async context, so log-trace correlation via `AsyncLocalStorage` works either way.
+
+### Logging libraries already have observation APIs; acknowledge them
+
+Most logging libraries already have reporter/transport/stream APIs that APM tools can use (consola reporters, pino transports, winston transports, bunyan streams). These work. The `diagnostics_channel` pitch is not "your reporter API is broken." The value is: (1) standardized interface across all logging libraries so APMs write one subscriber pattern instead of N library-specific integrations, (2) no dependency on the logger instance (subscribe by channel name globally, without needing to find/import the instance), (3) consistency with the rest of the stack if the library's ecosystem already uses `diagnostics_channel` (e.g. unjs: h3, srvx, unstorage, db0 all use it already).
+
 ## Payload Shape
 
 ### Always include serverAddress and serverPort

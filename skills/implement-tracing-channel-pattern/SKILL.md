@@ -68,6 +68,7 @@ Use **package-specific** names to avoid collisions:
 | `ioredis` | `ioredis:command`, `ioredis:connect` |
 | `pg` | `pg:query`, `pg:connect` |
 | `mysql2` | `mysql2:query`, `mysql2:connect` |
+| `consola` | `consola:log` (plain `dc.channel`, not TracingChannel) |
 
 ### Define context types
 
@@ -202,7 +203,22 @@ export { CommandTraceContext, ConnectTraceContext } from './tracing';
 
 9. **For batched operations that bypass the main path**, add tracing directly in the batch execution method. Each individual operation in a batch gets its own trace event (not one wrapper trace), with additional `batchMode` and `batchSize` fields. This matches how OTEL instruments batches.
 
-10. **Connection tracing covers initial connect only.** Don't trace reconnections — OTEL doesn't, and reconnections are an internal implementation detail.
+10. **Connection tracing covers initial connect only.** Don't trace reconnections -- OTEL doesn't, and reconnections are an internal implementation detail.
+
+11. **For logging libraries, choose `traceSync` vs plain `publish()` based on whether the core performs measurable work.** If the library does significant computation at the instrumentation point (e.g. pino's JSON serialization), `traceSync` lets consumers measure that cost. If the core just dispatches to reporters/transports (e.g. consola), plain `channel.publish()` is simpler and sufficient. Both run synchronously in the caller's async context, so log-trace correlation works either way. Publish the raw log object rather than extracting fields. Gate behind `hasSubscribers` for zero cost:
+    ```js
+    // Plain publish (when no measurable work to wrap):
+    const logChannel = dc?.channel('consola:log');
+    if (logChannel?.hasSubscribers) {
+      logChannel.publish(logObj);
+    }
+
+    // traceSync (when wrapping measurable work like serialization):
+    const logChannel = dc?.tracingChannel('pino_asJson');
+    if (logChannel.hasSubscribers !== false) {
+      return logChannel.traceSync(serializeFn, { instance: this, arguments }, this, ...args);
+    }
+    ```
 
 ## Step 4: Determine scope using OTEL as north star
 

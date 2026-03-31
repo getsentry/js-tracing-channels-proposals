@@ -114,6 +114,13 @@ Core logic is ours — only OTel base classes need swapping.
 | db0 | [sentry-javascript#18023](https://github.com/getsentry/sentry-javascript/issues/18023) | [unjs/db0#193](https://github.com/unjs/db0/pull/193) | 🟡 PR open |
 | Elysia | — | [elysiajs/elysia#1809](https://github.com/elysiajs/elysia/issues/1809) | 💬 In discussion |
 
+## Logging Libraries
+
+| Library | Upstream PR | Channel Type | Status |
+|---|---|---|---|
+| pino | [pinojs/pino#2281](https://github.com/pinojs/pino/pull/2281) | TracingChannel (`traceSync`) | ✅ **Merged** (v9.10.0, 2025-09) |
+| consola | — | Plain `diagnostics_channel` | 📝 Proposal drafted |
+
 ## Ecosystem Coordination
 
 - [e18e ecosystem issue #255](https://github.com/e18e/ecosystem-issues/issues/255) — umbrella issue for driving TracingChannel adoption
@@ -126,4 +133,5 @@ Core logic is ours — only OTel base classes need swapping.
 | OTel-provided | 24 | 2 (mysql2, fastify) | 4 (pg, redis, ioredis, knex) | 6 (mongodb, tedious, express, mongoose, prisma, graphql) | 11 + 1 📝 (koa) |
 | Sentry-built | 13 | 0 | 0 | 1 (hono) | 12 |
 | Other (non-Sentry) | 7 | 5 | 1 (db0) | 1 (elysia) | 0 |
-| **Total** | **44** | **7** | **5** | **8** | **24** |
+| Logging | 2 | 1 (pino) | 0 | 0 | 0 + 1 📝 (consola) |
+| **Total** | **46** | **8** | **5** | **8** | **25** |
