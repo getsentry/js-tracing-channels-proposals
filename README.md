@@ -17,12 +17,19 @@ Node.js 19.9+ ships `diagnostics_channel.TracingChannel`, a built-in mechanism t
 | [node-redis](proposals/node-redis.md) | `redis` | [redis/node-redis#3195](https://github.com/redis/node-redis/pull/3195) | 🟡 PR open |
 | [ioredis](proposals/ioredis.md) | `ioredis` | [redis/ioredis#2089](https://github.com/redis/ioredis/pull/2089) | 🟡 PR open |
 | [pg](proposals/pg.md) | `pg` / `pg-pool` | [brianc/node-postgres#3624](https://github.com/brianc/node-postgres/pull/3624) | 🟡 PR open |
+| [knex](proposals/knex.md) | `knex` | [knex/knex#6410](https://github.com/knex/knex/pull/6410) | 🟡 PR open |
 | [mysql2](proposals/mysql2.md) | `mysql2` | [sidorares/node-mysql2#4178](https://github.com/sidorares/node-mysql2/pull/4178) | ✅ **Merged** |
 | [mongodb](proposals/mongodb.md) | `mongodb` | [NODE-7472](https://jira.mongodb.org/browse/NODE-7472) | 💬 Under discussion |
+| [mongoose](proposals/mongoose.md) | `mongoose` | [mongoose#16105](https://github.com/Automattic/mongoose/issues/16105) | 💬 Issue opened |
+| [prisma](proposals/prisma.md) | `prisma` | [prisma#29353](https://github.com/prisma/prisma/issues/29353) | 💬 Issue opened |
+| [graphql](proposals/graphql.md) | `graphql` | [graphql-js#4629](https://github.com/graphql/graphql-js/issues/4629) | 💬 Issue opened |
+| [hono](proposals/hono.md) | `hono` | [hono#4842](https://github.com/honojs/hono/issues/4842) | 💬 Issue opened |
+| [koa](proposals/koa.md) | `koa` | — | 📝 Proposal drafted |
 | [tedious](proposals/tedious.md) | `tedious` | — | 📝 Proposal drafted |
-| [elysia](proposals/elysia.md) | `elysia` | — | 📝 Proposal drafted |
+| [consola](proposals/consola.md) | `consola` | — | 📝 Proposal drafted |
+| [elysia](proposals/elysia.md) | `elysia` | [elysia#1809](https://github.com/elysiajs/elysia/issues/1809) | 💬 In discussion |
 
-See [TRACKER.md](TRACKER.md) for the full migration tracker across all 44 instrumentations (OTel-provided, Sentry-built, and ecosystem).
+See [TRACKER.md](TRACKER.md) for the full migration tracker across all 46 instrumentations (OTel-provided, Sentry-built, and ecosystem).
 
 ## Channel Naming Convention
 
