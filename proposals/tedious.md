@@ -1,6 +1,6 @@
 # tedious: `TracingChannel` Proposal
 
-> **Status:** Draft (not yet submitted)
+> **Status:** Submitted — [tediousjs/tedious#1727](https://github.com/tediousjs/tedious/issues/1727)
 
 ---
 

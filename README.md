@@ -25,7 +25,7 @@ Node.js 19.9+ ships `diagnostics_channel.TracingChannel`, a built-in mechanism t
 | [graphql](proposals/graphql.md) | `graphql` | [graphql-js#4629](https://github.com/graphql/graphql-js/issues/4629) | 💬 Issue opened |
 | [hono](proposals/hono.md) | `hono` | [hono#4842](https://github.com/honojs/hono/issues/4842) | 💬 Issue opened |
 | [koa](proposals/koa.md) | `koa` | — | 📝 Proposal drafted |
-| [tedious](proposals/tedious.md) | `tedious` | — | 📝 Proposal drafted |
+| [tedious](proposals/tedious.md) | `tedious` | [tediousjs/tedious#1727](https://github.com/tediousjs/tedious/issues/1727) | 📬 Submitted |
 | [consola](proposals/consola.md) | `consola` | — | 📝 Proposal drafted |
 | [elysia](proposals/elysia.md) | `elysia` | [elysia#1809](https://github.com/elysiajs/elysia/issues/1809) | 💬 In discussion |
 
