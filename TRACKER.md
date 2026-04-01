@@ -1,7 +1,7 @@
 # TracingChannel Migration Tracker
 
 > Adding native `diagnostics_channel` `TracingChannel` support to benefit all observability tools, including OTel, Sentry, Datadog, and others.
-> 37 total instrumentations in Sentry JS SDK: 24 OTel-provided + 13 Sentry-built.
+> 37 total instrumentations in Sentry JS SDK: 24 OTel-provided + 13 Sentry-built. 47 total tracked.
 
 | Emoji | Status |
 |---|---|
@@ -112,6 +112,7 @@ Core logic is ours — only OTel base classes need swapping.
 | srvx (rename) | — | [h3js/srvx#176](https://github.com/h3js/srvx/pull/176) | ✅ **Merged** (2026-02-05) |
 | unstorage | [sentry-javascript#18022](https://github.com/getsentry/sentry-javascript/issues/18022) | [unjs/unstorage#707](https://github.com/unjs/unstorage/pull/707) | ✅ **Merged** (2026-02-25) |
 | db0 | [sentry-javascript#18023](https://github.com/getsentry/sentry-javascript/issues/18023) | [unjs/db0#193](https://github.com/unjs/db0/pull/193) | 🟡 PR open |
+| Nitro | — | [nitrojs/nitro#4001](https://github.com/nitrojs/nitro/pull/4001) (pi0) | 🟡 PR open — covered by h3, srvx, db0, unstorage TracingChannel work |
 | Elysia | — | [elysiajs/elysia#1809](https://github.com/elysiajs/elysia/issues/1809) | 💬 In discussion |
 
 ## Logging Libraries
@@ -132,6 +133,6 @@ Core logic is ours — only OTel base classes need swapping.
 |---|---|---|---|---|---|
 | OTel-provided | 24 | 2 (mysql2, fastify) | 4 (pg, redis, ioredis, knex) | 6 (express, mongodb, mongoose, tedious, prisma, graphql) | 11 + 1 📝 (koa) |
 | Sentry-built | 13 | 0 | 0 | 1 (hono) | 12 |
-| Other (non-Sentry) | 7 | 5 | 1 (db0) | 1 (elysia) | 0 |
+| Other (non-Sentry) | 8 | 5 | 2 (db0, nitro) | 1 (elysia) | 0 |
 | Logging | 2 | 1 (pino) | 0 | 0 | 0 + 1 📝 (consola) |
-| **Total** | **46** | **8** | **5** | **8** | **25** |
+| **Total** | **47** | **8** | **6** | **8** | **25** |
