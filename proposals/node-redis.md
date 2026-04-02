@@ -2,7 +2,7 @@
 
 > **PR:** [redis/node-redis#3195](https://github.com/redis/node-redis/pull/3195)
 > **Original proposal issue:** [redis/node-redis#2590](https://github.com/redis/node-redis/issues/2590) (by Datadog's @tlhunter)
-> **Status:** Open
+> **Status:** Merged (2026-04-02)
 
 ---
 

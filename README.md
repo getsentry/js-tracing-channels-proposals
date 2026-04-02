@@ -14,7 +14,7 @@ Node.js 19.9+ ships `diagnostics_channel.TracingChannel`, a built-in mechanism t
 
 | Library | Package | PR | Status |
 |---|---|---|---|
-| [node-redis](proposals/node-redis.md) | `redis` | [redis/node-redis#3195](https://github.com/redis/node-redis/pull/3195) | 🟡 PR open |
+| [node-redis](proposals/node-redis.md) | `redis` | [redis/node-redis#3195](https://github.com/redis/node-redis/pull/3195) | ✅ **Merged** |
 | [ioredis](proposals/ioredis.md) | `ioredis` | [redis/ioredis#2089](https://github.com/redis/ioredis/pull/2089) | 🟡 PR open |
 | [pg](proposals/pg.md) | `pg` / `pg-pool` | [brianc/node-postgres#3624](https://github.com/brianc/node-postgres/pull/3624) | 🟡 PR open |
 | [knex](proposals/knex.md) | `knex` | [knex/knex#6410](https://github.com/knex/knex/pull/6410) | 🟡 PR open |

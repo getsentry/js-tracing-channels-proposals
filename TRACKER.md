@@ -1,7 +1,7 @@
 # TracingChannel Migration Tracker
 
 > Adding native `diagnostics_channel` `TracingChannel` support to benefit all observability tools, including OTel, Sentry, Datadog, and others.
-> 37 total instrumentations in Sentry JS SDK: 24 OTel-provided + 13 Sentry-built. 47 total tracked.
+> 34 total instrumentations in Sentry JS SDK: 24 OTel-provided + 10 Sentry-built. 44 total tracked.
 
 | Emoji | Status |
 |---|---|
@@ -36,7 +36,7 @@ These currently rely on external monkey-patching infrastructure (IITM/RITM) and 
 | MySQL2 | `mysql2` | `packages/node/src/integrations/tracing/mysql2.ts` | [node-mysql2#4174](https://github.com/sidorares/node-mysql2/issues/4174) | [node-mysql2#4178](https://github.com/sidorares/node-mysql2/pull/4178) | ✅ **Merged** (2026-03-14) |
 | MongoDB | `mongodb` | `packages/node/src/integrations/tracing/mongo.ts` | [NODE-7472](https://jira.mongodb.org/browse/NODE-7472) | — | 💬 Issue opened |
 | Mongoose | `mongoose` | `packages/node/src/integrations/tracing/mongoose.ts` | [mongoose#16105](https://github.com/Automattic/mongoose/issues/16105) | — | 💬 Issue opened |
-| Redis | `redis` | `packages/node/src/integrations/tracing/redis.ts` | [node-redis#2590](https://github.com/redis/node-redis/issues/2590) | [node-redis#3195](https://github.com/redis/node-redis/pull/3195) | 🟡 PR open — changes requested by PavelPashov |
+| Redis | `redis` | `packages/node/src/integrations/tracing/redis.ts` | [node-redis#2590](https://github.com/redis/node-redis/issues/2590) | [node-redis#3195](https://github.com/redis/node-redis/pull/3195) | ✅ **Merged** (2026-04-02) |
 | IORedis | `ioredis` | `packages/node/src/integrations/tracing/redis.ts` | — | [ioredis#2089](https://github.com/redis/ioredis/pull/2089) | 🟡 PR open — approved by Qard |
 | Tedious (MSSQL) | `tedious` | `packages/node/src/integrations/tracing/tedious.ts` | [tedious#1727](https://github.com/tediousjs/tedious/issues/1727) | — | 💬 Issue opened |
 | Knex | `knex` | `packages/node/src/integrations/tracing/knex.ts` | [knex#6394](https://github.com/knex/knex/issues/6394) | [knex#6410](https://github.com/knex/knex/pull/6410) | 🟡 PR open |
@@ -70,17 +70,9 @@ These currently rely on external monkey-patching infrastructure (IITM/RITM) and 
 | FS | `fs` (Node built-in) | `packages/node/src/integrations/fs.ts` | — | — | ⬜ Not started |
 | Undici | `undici` / native fetch | `packages/node/src/integrations/node-fetch.ts` | — | — | ⬜ Not started |
 
-## Sentry-Built (13) — Need API Migration Only
+## Sentry-Built (10) — Need API Migration Only
 
 Core logic is ours — only OTel base classes need swapping.
-
-### Core / HTTP
-
-| Integration | Target Package | Sentry Location | Upstream Issue | Upstream PR | Status |
-|---|---|---|---|---|---|
-| SentryHttpInstrumentation | `http`/`https` (Node built-in) | `packages/node-core/src/integrations/http/` | — | — | ⬜ Not started |
-| SentryNodeFetchInstrumentation | `undici` / native fetch | `packages/node-core/src/integrations/node-fetch/` | — | — | ⬜ Not started |
-| HTTP Server Spans | `http`/`https` (Node built-in) | `packages/node-core/src/integrations/http/httpServerSpansIntegration.ts` | — | — | ⬜ Not started |
 
 ### Framework-Specific
 
@@ -131,8 +123,8 @@ Core logic is ours — only OTel base classes need swapping.
 
 | Category | Total | ✅ Merged | 🟡 PR Open | 💬 In Discussion | ⬜ Not Started |
 |---|---|---|---|---|---|
-| OTel-provided | 24 | 2 (mysql2, fastify) | 4 (pg, redis, ioredis, knex) | 6 (express, mongodb, mongoose, tedious, prisma, graphql) | 11 + 1 📝 (koa) |
-| Sentry-built | 13 | 0 | 0 | 1 (hono) | 12 |
+| OTel-provided | 24 | 3 (mysql2, fastify, redis) | 3 (pg, ioredis, knex) | 6 (express, mongodb, mongoose, tedious, prisma, graphql) | 11 + 1 📝 (koa) |
+| Sentry-built | 10 | 0 | 0 | 1 (hono) | 9 |
 | Other (non-Sentry) | 8 | 5 | 2 (db0, nitro) | 1 (elysia) | 0 |
 | Logging | 2 | 1 (pino) | 0 | 0 | 0 + 1 📝 (consola) |
-| **Total** | **47** | **8** | **6** | **8** | **25** |
+| **Total** | **44** | **9** | **5** | **8** | **22** |
