@@ -14,7 +14,7 @@ You are implementing Node.js `TracingChannel` (`node:diagnostics_channel`) suppo
 |---|---|---|
 | node-redis | [redis/node-redis#3195](https://github.com/redis/node-redis/pull/3195) | First implementation, batch MULTI/pipeline support |
 | ioredis | [redis/ioredis#2089](https://github.com/redis/ioredis/pull/2089) | Port to different architecture, IPC socket handling |
-| pg | [brianc/node-postgres#3624](https://github.com/brianc/node-postgres/pull/3624) | Multi-package, mix of TracingChannel + plain channels |
+| pg | [brianc/node-postgres#3650](https://github.com/brianc/node-postgres/pull/3650) | Multi-package, mix of TracingChannel + plain channels |
 
 Always read the proposal in `proposals/` for the target library before starting.
 
@@ -322,6 +322,10 @@ docker stop test-db && docker rm test-db
 - **Node 18's `TracingChannel.unsubscribe` might be broken:** on some Node 18 versions, unsubscribing from a tracing channel and then calling `traceCallback`/`tracePromise` again on the same channel can crash with `Cannot read properties of undefined (reading 'length')` because `_subscribers` on sub-channels becomes `undefined`. This doesn't affect production use (APMs subscribe once at startup), but it can break test patterns that subscribe/unsubscribe/resubscribe across tests. If your tests hit this, you may need stricter gating (e.g. checking `typeof hasSubscribers === 'boolean'` to require Node 19.9+/20.5+).
 - Plain `dc.channel()` works fine on Node 16+ — only gate TracingChannel tests, not plain channel tests.
 - poku's `skip()` calls `process.exit(0)` internally — safe because poku runs each test in a separate process
+
+## PR description rules
+
+- **Never mention AI in PR descriptions.** Do not add "Generated with Claude Code", "created with AI", or any AI attribution to PR descriptions or bodies. The co-author trailers in commits are sufficient. Mentioning AI in the PR description risks maintainers dismissing the contribution as low-quality without reviewing the code.
 
 ## Checklist
 

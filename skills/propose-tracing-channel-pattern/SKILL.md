@@ -143,7 +143,7 @@ const dc = ('getBuiltinModule' in process)
 - **`undici`** (Node.js core) — ships TracingChannel support since Node 20.12
 - **`node-redis`** — redis/node-redis#3195
 - **`ioredis`** — redis/ioredis#2089
-- **`pg` / `pg-pool`** — brianc/node-postgres#3624
+- **`pg` / `pg-pool`** — brianc/node-postgres#3650
 - [Add any new ones here]
 
 ---
