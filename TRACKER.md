@@ -37,7 +37,7 @@ These currently rely on external monkey-patching infrastructure (IITM/RITM) and 
 | MongoDB | `mongodb` | `packages/node/src/integrations/tracing/mongo.ts` | [NODE-7472](https://jira.mongodb.org/browse/NODE-7472) | — | 💬 Issue opened |
 | Mongoose | `mongoose` | `packages/node/src/integrations/tracing/mongoose.ts` | [mongoose#16105](https://github.com/Automattic/mongoose/issues/16105) | — | 💬 Issue opened |
 | Redis | `redis` | `packages/node/src/integrations/tracing/redis.ts` | [node-redis#2590](https://github.com/redis/node-redis/issues/2590) | [node-redis#3195](https://github.com/redis/node-redis/pull/3195) | ✅ **Merged** (2026-04-02) |
-| IORedis | `ioredis` | `packages/node/src/integrations/tracing/redis.ts` | — | [ioredis#2089](https://github.com/redis/ioredis/pull/2089) | 🟡 PR open — approved by Qard |
+| IORedis | `ioredis` | `packages/node/src/integrations/tracing/redis.ts` | — | [ioredis#2089](https://github.com/redis/ioredis/pull/2089) | ✅ **Merged** (2026-04-07) |
 | Tedious (MSSQL) | `tedious` | `packages/node/src/integrations/tracing/tedious.ts` | [tedious#1727](https://github.com/tediousjs/tedious/issues/1727) | — | 💬 Issue opened |
 | Knex | `knex` | `packages/node/src/integrations/tracing/knex.ts` | [knex#6394](https://github.com/knex/knex/issues/6394) | [knex#6410](https://github.com/knex/knex/pull/6410) | 🟡 PR open |
 | Prisma | `prisma` | `packages/node/src/integrations/tracing/prisma.ts` | [prisma#29353](https://github.com/prisma/prisma/issues/29353) | — | 💬 Issue opened |
@@ -123,8 +123,8 @@ Core logic is ours — only OTel base classes need swapping.
 
 | Category | Total | ✅ Merged | 🟡 PR Open | 💬 In Discussion | ⬜ Not Started |
 |---|---|---|---|---|---|
-| OTel-provided | 24 | 3 (mysql2, fastify, redis) | 3 (pg, ioredis, knex) | 6 (express, mongodb, mongoose, tedious, prisma, graphql) | 11 + 1 📝 (koa) |
+| OTel-provided | 24 | 4 (mysql2, fastify, redis, ioredis) | 2 (pg, knex) | 6 (express, mongodb, mongoose, tedious, prisma, graphql) | 11 + 1 📝 (koa) |
 | Sentry-built | 10 | 0 | 0 | 1 (hono) | 9 |
 | Other (non-Sentry) | 8 | 5 | 2 (db0, nitro) | 1 (elysia) | 0 |
 | Logging | 2 | 1 (pino) | 0 | 0 | 0 + 1 📝 (consola) |
-| **Total** | **44** | **9** | **5** | **8** | **22** |
+| **Total** | **44** | **10** | **4** | **8** | **22** |
