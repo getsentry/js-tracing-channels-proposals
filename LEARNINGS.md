@@ -118,7 +118,7 @@ try {
 - `require` fallback: covers older Node, Bun, and Cloudflare Workers (with `nodejs_compat`)
 - `try/catch`: swallows the error in browsers or any runtime without `diagnostics_channel`
 
-As of April 2026: Deno supports `getBuiltinModule`, Bun and Cloudflare Workers do not (open issues: [oven-sh/bun#12161](https://github.com/oven-sh/bun/issues/12161), [cloudflare/workerd#2121](https://github.com/cloudflare/workerd/issues/2121)). Both support `diagnostics_channel` via `require`.
+Runtime support for `getBuiltinModule`: Node 22.3+, Deno, Bun (since v1.2.7, March 2025), and Cloudflare Workers (since May 2024) all support it. The `require` fallback covers older versions of these runtimes. The `try/catch` covers browsers and runtimes without `diagnostics_channel`.
 
 ### Gate TracingChannel tests on availability
 
