@@ -86,7 +86,7 @@ Core logic is ours — only OTel base classes need swapping.
 
 | Integration | Target Package | Sentry Location | Upstream Issue | Upstream PR | Status |
 |---|---|---|---|---|---|
-| OpenAI | `openai` | `packages/node/src/integrations/tracing/openai/` | — | — | ⬜ Not started |
+| OpenAI | `openai` | `packages/node/src/integrations/tracing/openai/` | [openai-node#1819](https://github.com/openai/openai-node/issues/1819) | — | 💬 Issue opened |
 | Anthropic AI | `@anthropic-ai/sdk` | `packages/node/src/integrations/tracing/anthropic-ai/` | — | — | ⬜ Not started |
 | Google GenAI | `@google/genai` | `packages/node/src/integrations/tracing/google-genai/` | — | — | ⬜ Not started |
 | LangChain | `langchain` / `@langchain/*` | `packages/node/src/integrations/tracing/langchain/` | — | — | ⬜ Not started |
