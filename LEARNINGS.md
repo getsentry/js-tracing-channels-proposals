@@ -84,15 +84,41 @@ Never frame TracingChannel as replacing existing monitoring APIs. That triggers 
 
 The aggregated `hasSubscribers` getter on the TracingChannel object is `undefined` on Node 18. Only sub-channel `.hasSubscribers` works (e.g., `channel.start.hasSubscribers`). Use a `shouldTrace` helper that checks `hasSubscribers !== false` — this treats `undefined` (Node 18) as "might have subscribers, trace anyway" and `false` (Node 20+) as "definitely no subscribers, skip".
 
-### process.getBuiltinModule doesn't exist on Node 18
+### Loading diagnostics_channel across runtimes and Node versions
 
-Always fall back to `require()`:
+The right snippet depends on where the library runs:
+
+**Node-only libraries (e.g. pg, ioredis, knex):**
 ```js
 const dc = ('getBuiltinModule' in process)
   ? process.getBuiltinModule('node:diagnostics_channel')
   : require('node:diagnostics_channel');
 ```
-For libraries targeting non-Node runtimes (Bun, Deno), wrap the whole thing in `try/catch` as well.
+
+**Node-only libraries that only support Node 20+:**
+```js
+const dc = require('node:diagnostics_channel');
+```
+No guards needed. `diagnostics_channel` and `TracingChannel` are both stable.
+
+**Cross-runtime libraries (e.g. hono, elysia, consola):**
+```js
+let dc;
+try {
+  if (typeof process !== 'undefined' && typeof process.getBuiltinModule === 'function') {
+    dc = process.getBuiltinModule('node:diagnostics_channel');
+  }
+  if (!dc) {
+    dc = require('node:diagnostics_channel');
+  }
+} catch {}
+```
+- `typeof process` guard: safe in browsers and edge runtimes where `process` doesn't exist
+- `getBuiltinModule` path: bundler-invisible (no static import to resolve), works in Node 22.3+ and Deno
+- `require` fallback: covers older Node, Bun, and Cloudflare Workers (with `nodejs_compat`)
+- `try/catch`: swallows the error in browsers or any runtime without `diagnostics_channel`
+
+As of April 2026: Deno supports `getBuiltinModule`, Bun and Cloudflare Workers do not (open issues: [oven-sh/bun#12161](https://github.com/oven-sh/bun/issues/12161), [cloudflare/workerd#2121](https://github.com/cloudflare/workerd/issues/2121)). Both support `diagnostics_channel` via `require`.
 
 ### Gate TracingChannel tests on availability
 
