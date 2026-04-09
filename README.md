@@ -8,28 +8,9 @@ OpenTelemetry's Node.js instrumentation relies on [import-in-the-middle](https:/
 
 Node.js 19.9+ ships `diagnostics_channel.TracingChannel`, a built-in mechanism that lets libraries publish structured `start`/`end`/`asyncStart`/`asyncEnd`/`error` events. Consumers (Sentry, Datadog, New Relic, etc.) subscribe without patching — zero cost when nobody is listening.
 
-## Proposals
+## Status
 
-✅ Merged · 🟡 PR open · 💬 In discussion · 📝 Proposal drafted · ⬜ Not started
-
-| Library | Package | PR | Status |
-|---|---|---|---|
-| [node-redis](proposals/node-redis.md) | `redis` | [redis/node-redis#3195](https://github.com/redis/node-redis/pull/3195) | ✅ **Merged** |
-| [ioredis](proposals/ioredis.md) | `ioredis` | [redis/ioredis#2089](https://github.com/redis/ioredis/pull/2089) | ✅ **Merged** |
-| [pg](proposals/pg.md) | `pg` / `pg-pool` | [brianc/node-postgres#3624](https://github.com/brianc/node-postgres/pull/3624) | 🟡 PR open |
-| [knex](proposals/knex.md) | `knex` | [knex/knex#6410](https://github.com/knex/knex/pull/6410) | 🟡 PR open |
-| [mysql2](proposals/mysql2.md) | `mysql2` | [sidorares/node-mysql2#4178](https://github.com/sidorares/node-mysql2/pull/4178) | ✅ **Merged** |
-| [mongodb](proposals/mongodb.md) | `mongodb` | [NODE-7472](https://jira.mongodb.org/browse/NODE-7472) | 💬 Under discussion |
-| [mongoose](proposals/mongoose.md) | `mongoose` | [mongoose#16105](https://github.com/Automattic/mongoose/issues/16105) | 💬 Issue opened |
-| [prisma](proposals/prisma.md) | `prisma` | [prisma#29353](https://github.com/prisma/prisma/issues/29353) | 💬 Issue opened |
-| [graphql](proposals/graphql.md) | `graphql` | [graphql-js#4629](https://github.com/graphql/graphql-js/issues/4629) | 💬 Issue opened |
-| [hono](proposals/hono.md) | `hono` | [hono#4842](https://github.com/honojs/hono/issues/4842) | 💬 Issue opened |
-| [koa](proposals/koa.md) | `koa` | — | 📝 Proposal drafted |
-| [tedious](proposals/tedious.md) | `tedious` | [tediousjs/tedious#1727](https://github.com/tediousjs/tedious/issues/1727) | 📬 Submitted |
-| [consola](proposals/consola.md) | `consola` | — | 📝 Proposal drafted |
-| [elysia](proposals/elysia.md) | `elysia` | [elysia#1809](https://github.com/elysiajs/elysia/issues/1809) | 💬 In discussion |
-
-See [TRACKER.md](TRACKER.md) for the full migration tracker across all 46 instrumentations (OTel-provided, Sentry-built, and ecosystem).
+See [TRACKER.md](TRACKER.md) for the full migration tracker across all 44+ instrumentations (OTel-provided, Sentry-built, and ecosystem). Individual proposals live in [`proposals/`](proposals/).
 
 ## Channel Naming Convention
 
@@ -117,13 +98,6 @@ The operator decides which comments to act on and replies themselves. Selected l
 | `skills/implement-tracing-channel-pattern/` | Skill: turn a proposal into a working implementation |
 | `skills/update-tracker/` | Skill: sync tracker with upstream PR status |
 | `skills/capture-review-feedback/` | Skill: triage PR review comments with human in the loop |
-
-## Prior Art
-
-- **undici** (Node core) — the reference implementation, ships TracingChannel support since Node 19.9
-- **h3** — [merged](https://github.com/h3js/h3/pull/1251)
-- **srvx** — [merged](https://github.com/h3js/srvx/pull/141)
-- **unstorage** — [merged](https://github.com/unjs/unstorage/pull/707)
 
 ## Related
 
