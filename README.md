@@ -26,24 +26,34 @@ Context fields follow [OTel database semantic conventions](https://opentelemetry
 
 Libraries emit on a `TracingChannel`, APM tools subscribe:
 
+Library side (e.g. inside mysql2):
+
 ```js
-// Library side (e.g. inside mysql2)
-const dc = require('diagnostics_channel');
+import dc from 'node:diagnostics_channel';
+
 const queryChannel = dc.tracingChannel('mysql2:query');
 
 // In the query path:
-queryChannel.traceCallback(fn, { query, params }, thisArg, callback);
+return queryChannel.tracePromise(async () => {
+  const result = await connection.query(sql, values);
+  context.result = result;
+  return result;
+}, context);
+```
 
-// Consumer side (e.g. inside Sentry SDK)
-const dc = require('diagnostics_channel');
+Consumer side (e.g. inside Sentry SDK):
+
+```js
+import dc from 'node:diagnostics_channel';
+
 dc.tracingChannel('mysql2:query').subscribe({
   start({ query, params }) { /* create span */ },
-  end({ query, result }) { /* finish span */ },
+  asyncEnd({ query, result }) { /* finish span */ },
   error({ query, error }) { /* record error */ },
 });
 ```
 
-Zero cost when no subscribers — `channel.hasSubscribers` short-circuits before allocating any context objects.
+Zero cost when no subscribers. `channel.hasSubscribers` short-circuits before allocating any context objects.
 
 ## Workflow
 
