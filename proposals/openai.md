@@ -34,8 +34,8 @@ All channels use the Node.js [`TracingChannel`](https://nodejs.org/api/diagnosti
 
 | TracingChannel | Tracks | Context fields |
 |---|---|---|
-| `openai:chat` | Chat completion and response generation, from request to full response (or stream completion) | `method`, `model`, `stream`, `params`, `response` |
-| `openai:embeddings` | Embedding generation | `model`, `params`, `response` |
+| `openai:chat` | Chat completion and response generation, from request to full response (or stream completion) | `method`, `model`, `stream`, `params` |
+| `openai:embeddings` | Embedding generation | `model`, `params` |
 
 Two channels rather than one because chat and embeddings have fundamentally different context shapes (messages, tools, and streaming for chat vs. input text and dimensions for embeddings). A `method` discriminator on the chat channel distinguishes between the Chat Completions API and the Responses API.
 
@@ -47,7 +47,7 @@ Two channels rather than one because chat and embeddings have fundamentally diff
 | `model` | `params.model` | `gen_ai.request.model` |
 | `stream` | `!!params.stream` | `gen_ai.request.stream`. Signals that the span should cover the full streaming lifecycle |
 | `params` | Raw request parameters object | APMs extract: `gen_ai.request.temperature`, `gen_ai.request.top_p`, `gen_ai.request.frequency_penalty`, `gen_ai.request.presence_penalty`, `gen_ai.input.messages`, `gen_ai.system_instructions`, `gen_ai.request.available_tools` |
-| `response` | Raw response object (set on completion) | APMs extract: `gen_ai.response.id`, `gen_ai.response.model`, `gen_ai.response.finish_reasons`, `gen_ai.usage.input_tokens`, `gen_ai.usage.output_tokens`, `gen_ai.usage.total_tokens`, `gen_ai.response.text`, `gen_ai.response.tool_calls` |
+| `result` | Raw response object (auto-set by TracingChannel on completion) | APMs extract: `gen_ai.response.id`, `gen_ai.response.model`, `gen_ai.response.finish_reasons`, `gen_ai.usage.input_tokens`, `gen_ai.usage.output_tokens`, `gen_ai.usage.total_tokens`, `gen_ai.response.text`, `gen_ai.response.tool_calls` |
 
 ### `openai:embeddings` Context Properties
 
@@ -55,11 +55,11 @@ Two channels rather than one because chat and embeddings have fundamentally diff
 |---|---|---|
 | `model` | `params.model` | `gen_ai.request.model` |
 | `params` | Raw request parameters object | APMs extract: `gen_ai.request.encoding_format`, `gen_ai.request.dimensions`, `gen_ai.embeddings.input` |
-| `response` | Raw response object (set on completion) | APMs extract: `gen_ai.response.model`, `gen_ai.usage.input_tokens`, `gen_ai.usage.total_tokens` |
+| `result` | Raw response object (auto-set by TracingChannel on completion) | APMs extract: `gen_ai.response.model`, `gen_ai.usage.input_tokens`, `gen_ai.usage.total_tokens` |
 
 ### Why Raw Params and Response
 
-The context passes the raw `params` and `response` objects rather than pre-extracting individual attributes. This follows the pattern established by framework TracingChannel proposals (h3, Hono, Elysia) where the raw context object is passed and APMs extract what they need. Benefits:
+The context passes raw `params` and the auto-set `result` (the API response) rather than pre-extracting individual attributes. This follows the pattern established by framework TracingChannel proposals (h3, Hono, Elysia) where raw objects are passed and APMs extract what they need. Benefits:
 
 1. **Forward-compatible.** New API parameters and response fields are automatically available to subscribers without SDK changes.
 2. **No duplication.** Extracted fields like `model` are convenience accessors for the most common attributes. Everything else comes from the raw objects.
@@ -71,9 +71,9 @@ The context passes the raw `params` and `response` objects rather than pre-extra
 
 For non-streaming requests, `tracePromise` wraps the full operation: `start` fires before the request, `asyncEnd` fires when the response promise resolves.
 
-For streaming (`stream: true`), the SDK returns a stream object immediately, but the work continues until all chunks arrive. The TracingChannel lifecycle should cover the full duration, from request initiation to stream completion. The `response` field is populated with accumulated data (token usage, finish reasons, response ID) when the stream ends. This ensures APM spans reflect total generation time, not just time to first chunk.
+For streaming (`stream: true`), the SDK returns a stream object immediately, but the work continues until all chunks arrive. The TracingChannel lifecycle should cover the full duration, from request initiation to stream completion. The `result` is populated with accumulated data (token usage, finish reasons, response ID) when the stream ends. This ensures APM spans reflect total generation time, not just time to first chunk.
 
-The exact streaming implementation is flexible. The key contract: subscribers see a single span covering the full streaming lifecycle, with the final accumulated response available on `asyncEnd`.
+The exact streaming implementation is flexible. The key contract: subscribers see a single span covering the full streaming lifecycle, with the final accumulated result available on `asyncEnd`.
 
 ## Example: What the SDK Emits
 
@@ -90,11 +90,7 @@ async function create(params) {
   }
 
   const context = { method: 'chat.completions.create', model: params.model, stream: !!params.stream, params };
-  return chatChannel.tracePromise(async () => {
-    const response = await this._makeRequest(params);
-    context.response = response;
-    return response;
-  }, context);
+  return chatChannel.tracePromise(() => this._makeRequest(params), context);
 }
 ```
 
@@ -133,7 +129,7 @@ dc.tracingChannel('openai:chat').subscribe({
     ctx.span = tracer.startSpan(`chat ${ctx.model}`);
   },
   asyncEnd(ctx) {
-    // ctx.response available with token usage, finish reasons, etc.
+    // ctx.result is auto-set by TracingChannel with the API response
     ctx.span?.end();
   },
   error(ctx) {
@@ -187,7 +183,7 @@ Context objects should only be constructed inside a `hasSubscribers` guard:
 
 ```ts
 if (shouldTrace(chatChannel)) {
-  const context = { method, model: params.model, stream: !!params.stream, params, response: undefined };
+  const context = { method, model: params.model, stream: !!params.stream, params };
   return chatChannel.tracePromise(fn, context);
 } else {
   return fn();

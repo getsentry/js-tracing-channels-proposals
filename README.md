@@ -34,11 +34,7 @@ import dc from 'node:diagnostics_channel';
 const queryChannel = dc.tracingChannel('mysql2:query');
 
 // In the query path:
-return queryChannel.tracePromise(async () => {
-  const result = await connection.query(sql, values);
-  context.result = result;
-  return result;
-}, context);
+return queryChannel.tracePromise(() => connection.query(sql, values), context);
 ```
 
 Consumer side (e.g. inside Sentry SDK):

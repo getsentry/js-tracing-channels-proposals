@@ -42,8 +42,8 @@ All channels use the Node.js [`TracingChannel`](https://nodejs.org/api/diagnosti
 
 | TracingChannel | Tracks | Context fields |
 |---|---|---|
-| `ai:generate` | Text and object generation (`generateText`, `streamText`, `generateObject`, `streamObject`), from request to full response or stream completion | `method`, `model`, `stream`, `params`, `response` |
-| `ai:embed` | Embedding generation (`embed`, `embedMany`) | `method`, `model`, `params`, `response` |
+| `ai:generate` | Text and object generation (`generateText`, `streamText`, `generateObject`, `streamObject`), from request to full response or stream completion | `method`, `model`, `stream`, `params` |
+| `ai:embed` | Embedding generation (`embed`, `embedMany`) | `method`, `model`, `params` |
 
 Two channels because generation and embedding have fundamentally different context shapes and OTel semantic convention mappings. A `method` discriminator on each channel distinguishes the specific function called.
 
@@ -55,7 +55,7 @@ Two channels because generation and embedding have fundamentally different conte
 | `model` | `params.model` (the provider model instance) | `gen_ai.request.model` (via `model.modelId`) |
 | `stream` | `true` for `streamText`/`streamObject` | Signals that the span covers the full streaming lifecycle |
 | `params` | Raw function parameters | APMs extract: `gen_ai.request.temperature`, `gen_ai.request.top_p`, `gen_ai.request.max_tokens`, `gen_ai.input.messages`, `gen_ai.system_instructions`, `gen_ai.request.available_tools` |
-| `response` | Raw result (set on completion) | APMs extract: `gen_ai.response.model`, `gen_ai.response.finish_reasons`, `gen_ai.usage.input_tokens`, `gen_ai.usage.output_tokens`, `gen_ai.response.text`, `gen_ai.response.tool_calls` |
+| `result` | Raw result (auto-set by TracingChannel on completion) | APMs extract: `gen_ai.response.model`, `gen_ai.response.finish_reasons`, `gen_ai.usage.input_tokens`, `gen_ai.usage.output_tokens`, `gen_ai.response.text`, `gen_ai.response.tool_calls` |
 
 ### `ai:embed` Context Properties
 
@@ -64,14 +64,14 @@ Two channels because generation and embedding have fundamentally different conte
 | `method` | `'embed'` or `'embedMany'` | Distinguishes single vs batch embedding |
 | `model` | `params.model` (the provider embedding model) | `gen_ai.request.model` |
 | `params` | Raw function parameters | APMs extract: `gen_ai.embeddings.input` |
-| `response` | Raw result (set on completion) | APMs extract: `gen_ai.usage.input_tokens`, `gen_ai.usage.total_tokens` |
+| `result` | Raw result (auto-set by TracingChannel on completion) | APMs extract: `gen_ai.usage.input_tokens`, `gen_ai.usage.total_tokens` |
 
 ### Why Raw Params and Response
 
-The context passes raw `params` and `response` objects rather than pre-extracting individual attributes. This follows the same pattern used in framework TracingChannel proposals (h3, Hono, Elysia):
+The context passes raw `params` and the auto-set `result` rather than pre-extracting individual attributes. This follows the same pattern used in framework TracingChannel proposals (h3, Hono, Elysia):
 
-1. **Forward-compatible.** New parameters and response fields are available to subscribers without SDK changes.
-2. **Provider-agnostic.** The AI SDK wraps multiple providers (OpenAI, Anthropic, Google, etc.). Each provider may return different metadata. Passing the raw response lets APMs extract provider-specific fields.
+1. **Forward-compatible.** New parameters and response fields are automatically available to subscribers without SDK changes.
+2. **Provider-agnostic.** The AI SDK wraps multiple providers (OpenAI, Anthropic, Google, etc.). Each provider may return different metadata. Passing the raw result lets APMs extract provider-specific fields.
 3. **Privacy is the subscriber's concern.** The SDK emits what it has. APMs decide what to record.
 
 ---
@@ -80,7 +80,7 @@ The context passes raw `params` and `response` objects rather than pre-extractin
 
 For non-streaming calls (`generateText`, `generateObject`), `tracePromise` wraps the full operation: `start` fires before the request, `asyncEnd` fires when the response resolves.
 
-For streaming calls (`streamText`, `streamObject`), the TracingChannel lifecycle covers the full duration from request initiation to stream completion. The `response` field is populated with the final accumulated result (token usage, finish reasons, generated text) when the stream ends.
+For streaming calls (`streamText`, `streamObject`), the TracingChannel lifecycle covers the full duration from request initiation to stream completion. The `result` is populated with the final accumulated data (token usage, finish reasons, generated text) when the stream ends.
 
 ---
 
@@ -132,7 +132,7 @@ dc.tracingChannel('ai:generate').subscribe({
     ctx.span = tracer.startSpan(`${ctx.method} ${ctx.model.modelId}`);
   },
   asyncEnd(ctx) {
-    // ctx.response available with token usage, finish reasons, etc.
+    // ctx.result is auto-set by TracingChannel with the function result
     ctx.span?.end();
   },
   error(ctx) {
@@ -169,11 +169,7 @@ async function generateText(params) {
   }
 
   const context = { method: 'generateText', model: params.model, stream: false, params };
-  return generateChannel.tracePromise(async () => {
-    const response = await this._generate(params);
-    context.response = response;
-    return response;
-  }, context);
+  return generateChannel.tracePromise(() => this._generate(params), context);
 }
 ```
 
