@@ -31,7 +31,7 @@ These currently rely on external monkey-patching infrastructure (IITM/RITM) and 
 
 | Integration | Target Package | Sentry Location | Upstream Issue | Upstream PR | Status |
 |---|---|---|---|---|---|
-| PostgreSQL | `pg` | `packages/node/src/integrations/tracing/postgres.ts` | [node-postgres#3619](https://github.com/brianc/node-postgres/issues/3619) | [node-postgres#3624](https://github.com/brianc/node-postgres/pull/3624) | 🟡 PR open — no maintainer review yet |
+| PostgreSQL | `pg` | `packages/node/src/integrations/tracing/postgres.ts` | [node-postgres#3619](https://github.com/brianc/node-postgres/issues/3619) | [node-postgres#3650](https://github.com/brianc/node-postgres/pull/3650) | 🟡 PR open (replaces closed #3624) |
 | MySQL | `mysql` | `packages/node/src/integrations/tracing/mysql.ts` | — | — | 🔴 Unmaintained — use `mysql2` |
 | MySQL2 | `mysql2` | `packages/node/src/integrations/tracing/mysql2.ts` | [node-mysql2#4174](https://github.com/sidorares/node-mysql2/issues/4174) | [node-mysql2#4178](https://github.com/sidorares/node-mysql2/pull/4178) | ✅ **Merged** (2026-03-14) |
 | MongoDB | `mongodb` | `packages/node/src/integrations/tracing/mongo.ts` | [NODE-7472](https://jira.mongodb.org/browse/NODE-7472) | — | 💬 Issue opened |
@@ -91,7 +91,7 @@ Core logic is ours — only OTel base classes need swapping.
 | Google GenAI | `@google/genai` | `packages/node/src/integrations/tracing/google-genai/` | — | — | ⬜ Not started |
 | LangChain | `langchain` / `@langchain/*` | `packages/node/src/integrations/tracing/langchain/` | — | — | ⬜ Not started |
 | LangGraph | `@langchain/langgraph` | `packages/node/src/integrations/tracing/langgraph/` | — | — | ⬜ Not started |
-| Vercel AI (Node) | `ai` | `packages/node/src/integrations/tracing/vercelai/` | — | — | ⬜ Not started |
+| Vercel AI (Node) | `ai` | `packages/node/src/integrations/tracing/vercelai/` | [ai#14410](https://github.com/vercel/ai/issues/14410) | — | 💬 Issue opened |
 | Vercel AI (Cloudflare) | `ai` | `packages/cloudflare/src/integrations/tracing/vercelai.ts` | — | — | ⬜ Not started |
 
 ## Other TracingChannel PRs (not in Sentry tracker)
@@ -104,7 +104,7 @@ Core logic is ours — only OTel base classes need swapping.
 | srvx (rename) | — | [h3js/srvx#176](https://github.com/h3js/srvx/pull/176) | ✅ **Merged** (2026-02-05) |
 | unstorage | [sentry-javascript#18022](https://github.com/getsentry/sentry-javascript/issues/18022) | [unjs/unstorage#707](https://github.com/unjs/unstorage/pull/707) | ✅ **Merged** (2026-02-25) |
 | db0 | [sentry-javascript#18023](https://github.com/getsentry/sentry-javascript/issues/18023) | [unjs/db0#193](https://github.com/unjs/db0/pull/193) | 🟡 PR open |
-| Nitro | — | [nitrojs/nitro#4001](https://github.com/nitrojs/nitro/pull/4001) (pi0) | 🟡 PR open — covered by h3, srvx, db0, unstorage TracingChannel work |
+| Nitro | — | [nitrojs/nitro#4001](https://github.com/nitrojs/nitro/pull/4001) (pi0) | ✅ **Merged** (2026-04-13) |
 | Elysia | — | [elysiajs/elysia#1809](https://github.com/elysiajs/elysia/issues/1809) | 💬 In discussion |
 
 ## Logging Libraries
@@ -124,7 +124,7 @@ Core logic is ours — only OTel base classes need swapping.
 | Category | Total | ✅ Merged | 🟡 PR Open | 💬 In Discussion | ⬜ Not Started |
 |---|---|---|---|---|---|
 | OTel-provided | 24 | 4 (mysql2, fastify, redis, ioredis) | 2 (pg, knex) | 6 (express, mongodb, mongoose, tedious, prisma, graphql) | 11 + 1 📝 (koa) |
-| Sentry-built | 10 | 0 | 0 | 1 (hono) | 9 |
-| Other (non-Sentry) | 8 | 5 | 2 (db0, nitro) | 1 (elysia) | 0 |
+| Sentry-built | 10 | 0 | 0 | 2 (hono, vercel-ai-node) | 8 |
+| Other (non-Sentry) | 8 | 6 | 1 (db0) | 1 (elysia) | 0 |
 | Logging | 2 | 1 (pino) | 0 | 0 | 0 + 1 📝 (consola) |
-| **Total** | **44** | **10** | **4** | **8** | **22** |
+| **Total** | **44** | **11** | **3** | **9** | **21** |
