@@ -85,7 +85,7 @@ const chatChannel = dc.tracingChannel('openai:chat');
 
 // Inside chat.completions.create / responses.create
 async function create(params) {
-  if (chatChannel.start.hasSubscribers === false) {
+  if (chatChannel.hasSubscribers === false) {
     return this._makeRequest(params);
   }
 
@@ -172,7 +172,7 @@ All SDK methods return Promises. `tracePromise` is the correct wrapper for non-s
 ### shouldTrace Helper
 
 ```ts
-const shouldTrace = (ch) => ch.start.hasSubscribers !== false;
+const shouldTrace = (ch) => ch.hasSubscribers !== false;
 ```
 
 This treats `undefined` (Node 18, where the aggregated `hasSubscribers` is broken) as "trace anyway" and `false` (Node 20+) as "skip". See [Node.js #54470](https://github.com/nodejs/node/issues/54470) for background.

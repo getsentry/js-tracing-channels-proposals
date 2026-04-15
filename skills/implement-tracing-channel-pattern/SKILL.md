@@ -316,8 +316,8 @@ docker stop test-db && docker rm test-db
 
 ### Node 18 compatibility gotchas
 
-- `TracingChannel.hasSubscribers` (the aggregated getter) is `undefined` on Node 18 — only sub-channel `hasSubscribers` (e.g., `channel.start.hasSubscribers`) works
-- Use the `shouldTrace` helper which checks `hasSubscribers !== false`: treats `undefined` (Node 18) as "might have subscribers, trace anyway" and `false` (Node 20+) as "definitely no subscribers, skip". Also serves as a type guard for TypeScript narrowing.
+- `TracingChannel.hasSubscribers` (the aggregated getter) is `undefined` on Node 18. Individual sub-channels (e.g., `channel.start`) always have `hasSubscribers`.
+- Use the `shouldTrace` helper which checks `channel.hasSubscribers !== false` on the top-level `TracingChannel` object: treats `undefined` (Node 18) as "might have subscribers, trace anyway" and `false` (Node 20+) as "definitely no subscribers, skip". Also serves as a type guard for TypeScript narrowing.
 - `process.getBuiltinModule` doesn't exist on Node 18 — always fallback to `require()`
 - **Node 18's `TracingChannel.unsubscribe` might be broken:** on some Node 18 versions, unsubscribing from a tracing channel and then calling `traceCallback`/`tracePromise` again on the same channel can crash with `Cannot read properties of undefined (reading 'length')` because `_subscribers` on sub-channels becomes `undefined`. This doesn't affect production use (APMs subscribe once at startup), but it can break test patterns that subscribe/unsubscribe/resubscribe across tests. If your tests hit this, you may need stricter gating (e.g. checking `typeof hasSubscribers === 'boolean'` to require Node 19.9+/20.5+).
 - Plain `dc.channel()` works fine on Node 16+ — only gate TracingChannel tests, not plain channel tests.

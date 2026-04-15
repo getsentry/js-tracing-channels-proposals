@@ -298,7 +298,7 @@ app.trace(handler) {
 ### shouldTrace Helper
 
 ```ts
-const shouldTrace = (ch) => ch.start.hasSubscribers !== false;
+const shouldTrace = (ch) => ch.hasSubscribers !== false;
 ```
 
 This treats `undefined` (Node 18, where the aggregated `hasSubscribers` is broken) as "trace anyway" and `false` (Node 20+) as "skip". See [Node.js #54470](https://github.com/nodejs/node/issues/54470) for background.
@@ -368,7 +368,7 @@ TracingChannel is available on all runtimes Elysia targets. No fallbacks are nee
 The Bun quirk is the same issue Node 18 had, and the `shouldTrace` helper already handles it:
 
 ```ts
-const shouldTrace = (ch) => ch.start.hasSubscribers !== false;
+const shouldTrace = (ch) => ch.hasSubscribers !== false;
 ```
 
 When `hasSubscribers` is `undefined` (Bun today), this evaluates to `true`, meaning tracing runs even when no subscriber is attached. This is a small overhead, not a correctness issue. Once Bun ships the fix, `hasSubscribers` will return `false` when nobody is listening, and the zero-cost guarantee kicks in automatically. No code changes needed on Elysia's side.

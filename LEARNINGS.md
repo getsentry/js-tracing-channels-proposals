@@ -82,7 +82,7 @@ Never frame TracingChannel as replacing existing monitoring APIs. That triggers 
 
 ### TracingChannel.hasSubscribers is broken on Node 18
 
-The aggregated `hasSubscribers` getter on the TracingChannel object is `undefined` on Node 18. Only sub-channel `.hasSubscribers` works (e.g., `channel.start.hasSubscribers`). Use a `shouldTrace` helper that checks `hasSubscribers !== false` — this treats `undefined` (Node 18) as "might have subscribers, trace anyway" and `false` (Node 20+) as "definitely no subscribers, skip".
+The aggregated `hasSubscribers` getter on the `TracingChannel` object is `undefined` on Node 18. Individual sub-channels (e.g., `channel.start`) always have `hasSubscribers`. Use a `shouldTrace` helper that checks the top-level `channel.hasSubscribers !== false`. This treats `undefined` (Node 18, where the aggregated getter is missing) as "might have subscribers, trace anyway" and `false` (Node 20+) as "definitely no subscribers, skip".
 
 ### Loading diagnostics_channel across runtimes and Node versions
 

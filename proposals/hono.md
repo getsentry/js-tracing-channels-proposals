@@ -302,7 +302,7 @@ This gives APM tools a waterfall view of the full request lifecycle through stan
 ### shouldTrace Helper
 
 ```ts
-const shouldTrace = (ch) => ch.start.hasSubscribers !== false;
+const shouldTrace = (ch) => ch.hasSubscribers !== false;
 ```
 
 This treats `undefined` (Node 18, where the aggregated `hasSubscribers` is broken) as "trace anyway" and `false` (Node 20+) as "skip". See [Node.js #54470](https://github.com/nodejs/node/issues/54470) for background.

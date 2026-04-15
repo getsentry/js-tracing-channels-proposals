@@ -164,7 +164,7 @@ const generateChannel = dc.tracingChannel('ai:generate');
 
 // Inside generateText / streamText / generateObject / streamObject
 async function generateText(params) {
-  if (generateChannel.start.hasSubscribers === false) {
+  if (generateChannel.hasSubscribers === false) {
     return this._generate(params);
   }
 
@@ -193,7 +193,7 @@ TracingChannel and `experimental_telemetry` can coexist:
 ### shouldTrace Helper
 
 ```ts
-const shouldTrace = (ch) => ch.start.hasSubscribers !== false;
+const shouldTrace = (ch) => ch.hasSubscribers !== false;
 ```
 
 This treats `undefined` (Node 18, where the aggregated `hasSubscribers` is broken) as "trace anyway" and `false` (Node 20+) as "skip". See [Node.js #54470](https://github.com/nodejs/node/issues/54470) for background.
