@@ -21,7 +21,7 @@ These currently rely on external monkey-patching infrastructure (IITM/RITM) and 
 | Integration | Target Package | Sentry Location | Upstream Issue | Upstream PR | Status |
 |---|---|---|---|---|---|
 | HTTP | `http`/`https` (Node built-in) | `packages/node/src/integrations/http.ts` | — | — | ⬜ Not started |
-| Express | `express` | `packages/node/src/integrations/tracing/express.ts` | [express#6353](https://github.com/expressjs/express/issues/6353) | [pillarjs/router#96](https://github.com/pillarjs/router/pull/96) (Qard) | 📝 Proposal drafted |
+| Express | `express` | `packages/node/src/integrations/tracing/express.ts` | [express#6353](https://github.com/expressjs/express/issues/6353) | [pillarjs/router#196](https://github.com/pillarjs/router/pull/196) | 🟡 PR open |
 | Fastify | `fastify` | `packages/node/src/integrations/tracing/fastify/` | — | — | ✅ Ships TracingChannel natively (`tracing:fastify.request.handler`) |
 | Koa | `koa` | `packages/node/src/integrations/tracing/koa.ts` | — | — | 📝 Proposal drafted |
 | Hapi | `@hapi/hapi` | `packages/node/src/integrations/tracing/hapi/` | — | — | ⬜ Not started |
@@ -123,8 +123,8 @@ Core logic is ours — only OTel base classes need swapping.
 
 | Category | Total | ✅ Merged | 🟡 PR Open | 💬 In Discussion | ⬜ Not Started |
 |---|---|---|---|---|---|
-| OTel-provided | 24 | 4 (mysql2, fastify, redis, ioredis) | 2 (pg, knex) | 5 (mongodb, mongoose, tedious, prisma, graphql) | 11 + 2 📝 (express, koa) |
+| OTel-provided | 24 | 4 (mysql2, fastify, redis, ioredis) | 3 (express, pg, knex) | 5 (mongodb, mongoose, tedious, prisma, graphql) | 11 + 1 📝 (koa) |
 | Sentry-built | 10 | 0 | 0 | 2 (hono, vercel-ai-node) | 8 |
 | Other (non-Sentry) | 8 | 6 | 1 (db0) | 1 (elysia) | 0 |
 | Logging | 2 | 1 (pino) | 0 | 0 | 0 + 1 📝 (consola) |
-| **Total** | **44** | **11** | **3** | **9** | **21** |
+| **Total** | **44** | **11** | **4** | **9** | **20** |

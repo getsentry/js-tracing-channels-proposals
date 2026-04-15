@@ -1,7 +1,8 @@
 # Express: `TracingChannel` Proposal
 
-> **Status:** 📝 Proposal drafted
+> **Status:** 🟡 PR open
 > **Tracking issue:** [expressjs/express#6353](https://github.com/expressjs/express/issues/6353)
+> **PR:** [pillarjs/router#196](https://github.com/pillarjs/router/pull/196)
 
 ---
 
