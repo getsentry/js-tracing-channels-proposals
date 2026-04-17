@@ -27,35 +27,14 @@ This has broader ecosystem concerns:
 
 ### Cross-platform compatibility
 
-A previous discussion ([#3133](https://github.com/graphql/graphql-js/issues/3133)) raised the concern that `diagnostics_channel` is Node.js-specific and graphql-js targets multiple platforms. This concern was valid in 2021 but is no longer accurate:
+A previous discussion ([#3133](https://github.com/graphql/graphql-js/issues/3133)) raised the concern that `diagnostics_channel` is Node.js-specific and graphql-js targets multiple platforms. The ecosystem has moved on since then:
 
 - **Bun** supports `node:diagnostics_channel` including `TracingChannel` ([Bun docs](https://bun.sh/docs/runtime/nodejs-apis#node-diagnostics-channel))
 - **Deno** supports `node:diagnostics_channel` via its Node.js compatibility layer ([Deno docs](https://docs.deno.com/api/node/diagnostics_channel/))
 
-Every server-side JavaScript runtime that runs graphql-js in production now supports `diagnostics_channel`. Browser environments don't need APM tracing at the execution engine level — browsers run GraphQL clients, not servers.
+Every server-side JavaScript runtime that runs graphql-js in production now supports `diagnostics_channel`. Browser environments don't need APM tracing at the execution engine level; browsers run GraphQL clients, not servers.
 
-The standard compatibility pattern used across the ecosystem handles this cleanly:
-
-```js
-const dc = ('getBuiltinModule' in process)
-  ? process.getBuiltinModule('node:diagnostics_channel')
-  : require('node:diagnostics_channel');
-```
-
-If an even more defensive approach is desired for edge cases:
-
-```js
-let dc;
-try {
-  dc = ('getBuiltinModule' in process)
-    ? process.getBuiltinModule('node:diagnostics_channel')
-    : require('node:diagnostics_channel');
-} catch {
-  // No diagnostics_channel available — all tracing is a no-op
-}
-```
-
-This is zero-cost when `diagnostics_channel` is unavailable — no import, no overhead, no behavior change.
+That said, graphql-js is deliberately isomorphic and has zero runtime-specific imports in `src/`. To preserve that invariant, this proposal does not have graphql-js import `node:diagnostics_channel` itself. Instead, graphql-js exposes a public API for enabling tracing, and APMs (or runtime-specific adapters) hand the module in when they set up. Details in the [Public API](#public-api) section below.
 
 ---
 
@@ -116,6 +95,92 @@ All channels use the Node.js [`TracingChannel`](https://nodejs.org/api/diagnosti
 #### Subscribe Channel (`graphql:subscribe`)
 
 Same context shape as the execute channel.
+
+---
+
+## Public API
+
+graphql-js owns the channel names and is responsible for emitting events; APMs (or framework adapters) own the acquisition of `node:diagnostics_channel` and register it with graphql-js at setup. This keeps graphql-js free of any runtime-specific imports while still delivering true auto-instrumentation once an APM is loaded.
+
+### Structural types
+
+Minimal, structural versions of Node's `diagnostics_channel` types. `node:diagnostics_channel` satisfies these by duck typing, so no dependency on `@types/node` is required.
+
+```ts
+export interface MinimalChannel {
+  readonly hasSubscribers: boolean;
+  publish(message: unknown): void;
+}
+
+export interface MinimalTracingChannel {
+  readonly hasSubscribers: boolean;
+  readonly start: MinimalChannel;
+  readonly end: MinimalChannel;
+  readonly asyncStart: MinimalChannel;
+  readonly asyncEnd: MinimalChannel;
+  readonly error: MinimalChannel;
+
+  traceSync<T>(
+    fn: (...args: unknown[]) => T,
+    ctx: object,
+    thisArg?: unknown,
+    ...args: unknown[]
+  ): T;
+
+  tracePromise<T>(
+    fn: (...args: unknown[]) => Promise<T>,
+    ctx: object,
+    thisArg?: unknown,
+    ...args: unknown[]
+  ): Promise<T>;
+}
+
+export interface MinimalDiagnosticsChannel {
+  tracingChannel(name: string): MinimalTracingChannel;
+}
+
+export interface GraphQLChannels {
+  execute: MinimalTracingChannel;
+  parse: MinimalTracingChannel;
+  validate: MinimalTracingChannel;
+  resolve: MinimalTracingChannel;
+  subscribe: MinimalTracingChannel;
+}
+```
+
+### `enableDiagnosticsChannel(dc)`
+
+The single public function APMs call to register the module:
+
+```ts
+let channels: GraphQLChannels | undefined;
+
+// PRIVATE: used by graphql-js internals at emission sites
+export function getChannels(): GraphQLChannels | undefined {
+  return channels;
+}
+
+// PUBLIC
+export function enableDiagnosticsChannel(dc: MinimalDiagnosticsChannel): void {
+  channels = {
+    execute: dc.tracingChannel('graphql:execute'),
+    parse: dc.tracingChannel('graphql:parse'),
+    validate: dc.tracingChannel('graphql:validate'),
+    resolve: dc.tracingChannel('graphql:resolve'),
+    subscribe: dc.tracingChannel('graphql:subscribe'),
+  };
+}
+```
+
+Shape-wise this matches the existing `enableDevMode()` in `src/devMode.ts`: module-level state, top-level `enable*` function, void return. It's the closest fit to graphql-js's existing conventions rather than inventing a new API shape.
+
+### Why graphql-js owns the channel names
+
+Because graphql-js calls `dc.tracingChannel(name)` internally with canonical names, multiple APMs all converge on the same cached `TracingChannel` instances. An APM can't subtly break subscription coexistence by drifting on the string `"graphql:execute"`; the name only exists in graphql-js itself. `node:diagnostics_channel` caches channels by name, so concurrent registrations from multiple APMs land on identical underlying instances and all subscribers receive all events.
+
+### Ordering and re-registration
+
+`enableDiagnosticsChannel` can be called at any time. APMs are not forced into an init race: subscribers attached before or after registration all converge on the same cached channels. Re-registering with the same module is a structural no-op; re-registering with a different module replaces the stored references, but since `node:diagnostics_channel` is a module singleton, that case is practically limited to isolation/testing.
 
 ---
 
@@ -210,8 +275,14 @@ This approach has several problems beyond the standard monkey-patching fragility
 
 ### With TracingChannel: Subscribe to Structured Events
 
+APMs enable tracing by handing graphql-js the `node:diagnostics_channel` module, then subscribing to the channel names that graphql-js exposes:
+
 ```js
 const dc = require('node:diagnostics_channel');
+const { enableDiagnosticsChannel } = require('graphql');
+
+// Register the diagnostics_channel module with graphql-js (runtime-agnostic core stays clean).
+enableDiagnosticsChannel(dc);
 
 // Subscribe to operation execution — the primary span
 dc.tracingChannel('graphql:execute').subscribe({
@@ -334,26 +405,13 @@ The TracingChannel context includes `fieldPath` so subscribers can implement all
 
 ## Backward Compatibility
 
-Zero-cost when no subscribers are registered — `hasSubscribers` is checked before constructing any context objects. Silently skipped on runtimes where `diagnostics_channel` is unavailable.
+Fully backward compatible on every axis:
 
-```ts
-const dc = ('getBuiltinModule' in process)
-  ? process.getBuiltinModule('node:diagnostics_channel')
-  : require('node:diagnostics_channel');
-```
-
-For graphql-js's multi-platform support, a defensive `try/catch` wrapper ensures zero impact on environments without `diagnostics_channel`:
-
-```ts
-let dc;
-try {
-  dc = ('getBuiltinModule' in process)
-    ? process.getBuiltinModule('node:diagnostics_channel')
-    : require('node:diagnostics_channel');
-} catch {
-  // diagnostics_channel unavailable — all tracing is a no-op
-}
-```
+- **No new dependencies.** graphql-js imports nothing new. The `MinimalDiagnosticsChannel` types are local structural definitions; `node:diagnostics_channel` is only referenced by the APMs that call `enableDiagnosticsChannel(dc)`.
+- **No runtime-specific code in `src/`.** The isomorphic invariant is preserved. Non-Node runtimes that never call `enableDiagnosticsChannel` see no behavior change and no Node references anywhere in the execution path.
+- **Zero cost when no APM is loaded.** If `enableDiagnosticsChannel` is never called, `getChannels()` returns `undefined` and every emission site short-circuits on a single property access. No context objects are allocated.
+- **Zero cost when an APM is loaded but has no subscribers.** Each emission site is gated on `channel.hasSubscribers` before any span context is constructed.
+- **No ordering constraints.** `enableDiagnosticsChannel` and APM subscriptions can happen in any order, at any time.
 
 ---
 

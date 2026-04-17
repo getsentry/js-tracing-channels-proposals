@@ -234,6 +234,51 @@ When `sendCommand` is called from `_executeCommand`, both layers can emit the sa
 
 When converting inline code to channel events, identify implicit state that the original code relied on (e.g., a boolean guard before decrementing a counter). That state must be included in the event payload — subscribers don't have access to the emitter's internal variables.
 
+## Isomorphic Libraries
+
+### Isomorphic libraries refuse runtime-specific imports in core
+
+Libraries like graphql-js that run in browsers, Bun, Deno, Cloudflare Workers, and Node have a hard invariant: no `from 'node:...'`, no `require('fs'|'path'|'crypto'|...)`, no `process.*` outside tests, zero runtime dependencies. This isn't a nice-to-have; it's the product boundary. The standard `getBuiltinModule`/`require` compat snippet violates this invariant no matter how small. For these libraries, do not propose module-scope acquisition, even guarded. Respect the invariant from the first message.
+
+Check the library by grepping `src/` for `from 'node:`, `require\(('node:|fs|path|crypto)`, and `process.` before writing the proposal. If all three turn up empty outside tests, assume the isomorphic invariant is load-bearing.
+
+### The enable*/register pattern for isomorphic libraries
+
+Library exposes a top-level function (`enableDiagnosticsChannel(dc)`, `registerDiagnosticsChannel(dc)`, etc.) that accepts the `diagnostics_channel` module and stores it in module-level `let` state. Internal emission sites read via a private `getChannels()` accessor. The library itself never imports `node:diagnostics_channel`. APMs (Sentry, OTel, Datadog) call the enable function as part of their own setup code; each APM already ships a Node-specific integration, so adding three lines to it is free.
+
+Benefits:
+- Library stays 100% pure (invariant preserved).
+- Multiple APMs coexist naturally: since the library owns the channel names and calls `dc.tracingChannel(name)` internally, all registrations converge on the same cached `TracingChannel` instances.
+- Enable can be called at any time; no init-ordering race between APMs.
+- No companion package, no framework plumbing, no user-code changes.
+- This is effectively the OpenTelemetry API/SDK pattern miniaturized.
+
+### Match the library's existing setter/toggle conventions
+
+When you need a registration function, match the library's existing pattern rather than inventing one. graphql-js has `enableDevMode()` and `enableDevInstanceOf()`: module-level `let`, top-level `enable*` function, void return. So use `enableDiagnosticsChannel(dc): void`, not `registerDc(dc): { channels, unregister }`. Fit beats feature-richness when selling to protective maintainers; a matching shape reads as "one of ours" and gets accepted faster than a superior but alien design.
+
+Always grep for existing `enable*` / `register*` / `set*` functions in the target repo before proposing an API. If none exist, pick the clearest verb; if one exists, mirror its signature.
+
+### The library owns channel names, not APMs
+
+Don't have APMs pass pre-built `TracingChannel` instances or channel-name maps. Accept the `diagnostics_channel` module and construct the channels internally using canonical names you own. This guarantees convergence across APMs (they can't drift on strings) and keeps the channel-name surface private enough that you can rename without breaking APMs any worse than a straight module rename would.
+
+### Auto-instrumentation without module-scope acquisition
+
+The auto-instrumentation property of TracingChannel (no user code changes, zero-config) does not require the library to acquire `diagnostics_channel` itself. It requires *someone* to register it. APMs are always that someone, because:
+- Users who don't have an APM don't care about `diagnostics_channel` at all (no subscribers).
+- Users who do have an APM already call that APM's init (e.g., `Sentry.init()`).
+- Therefore APM init is the natural place for `enableDiagnosticsChannel(dc)`.
+
+Pure DI (channel passed per call via options) doesn't work for auto-instrumentation because APMs would then need to monkey-patch entry points to inject the channel. That's exactly the IITM/RITM pattern we're trying to move past.
+
+### Objections you'll hear and how to answer
+
+- **"We don't want runtime-specific imports in core."** Respect it fully. Propose the enable/register pattern.
+- **"Just pass it through the options bag."** Agree partially (per-call override is fine), but explain that emitting by default is what makes auto-instrumentation work. Walk through: APMs require users to plumb the channel through every call site (nonstarter for zero-config), or APMs fall back to IITM (the thing we're replacing).
+- **"What about multiple APMs?"** The library owning channel names guarantees convergence through `diagnostics_channel`'s name cache. Multiple APMs subscribing to the same string get the same underlying channel, same events.
+- **"What about unregister?"** Skip it in v1 unless the library has a `disable*` pattern. Add later if needed. `enableDevMode()` has no `disable` counterpart and nobody has complained.
+
 ## Maintainer Relations
 
 ### Frame refactors as delivery mechanism changes, not rewrites
