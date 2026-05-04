@@ -106,6 +106,7 @@ Core logic is ours — only OTel base classes need swapping.
 | db0 | [sentry-javascript#18023](https://github.com/getsentry/sentry-javascript/issues/18023) | [unjs/db0#193](https://github.com/unjs/db0/pull/193) | 🟡 PR open |
 | Nitro | — | [nitrojs/nitro#4001](https://github.com/nitrojs/nitro/pull/4001) (pi0) | ✅ **Merged** (2026-04-13) |
 | Elysia | — | [elysiajs/elysia#1809](https://github.com/elysiajs/elysia/issues/1809) | 💬 In discussion |
+| Remix | — | — | 📝 Proposal drafted |
 
 ## Logging Libraries
 
