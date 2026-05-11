@@ -35,7 +35,7 @@ These currently rely on external monkey-patching infrastructure (IITM/RITM) and 
 | MySQL | `mysql` | `packages/node/src/integrations/tracing/mysql.ts` | — | — | 🔴 Unmaintained — use `mysql2` |
 | MySQL2 | `mysql2` | `packages/node/src/integrations/tracing/mysql2.ts` | [node-mysql2#4174](https://github.com/sidorares/node-mysql2/issues/4174) | [node-mysql2#4178](https://github.com/sidorares/node-mysql2/pull/4178) | ✅ **Merged** (2026-03-14) |
 | MongoDB | `mongodb` | `packages/node/src/integrations/tracing/mongo.ts` | [NODE-7472](https://jira.mongodb.org/browse/NODE-7472) | — | 💬 Issue opened |
-| Mongoose | `mongoose` | `packages/node/src/integrations/tracing/mongoose.ts` | [mongoose#16105](https://github.com/Automattic/mongoose/issues/16105) | — | 💬 Issue opened |
+| Mongoose | `mongoose` | `packages/node/src/integrations/tracing/mongoose.ts` | [mongoose#16105](https://github.com/Automattic/mongoose/issues/16105) | [mongoose#16275](https://github.com/Automattic/mongoose/pull/16275) | 🟡 PR open |
 | Redis | `redis` | `packages/node/src/integrations/tracing/redis.ts` | [node-redis#2590](https://github.com/redis/node-redis/issues/2590) | [node-redis#3195](https://github.com/redis/node-redis/pull/3195) | ✅ **Merged** (2026-04-02) |
 | IORedis | `ioredis` | `packages/node/src/integrations/tracing/redis.ts` | — | [ioredis#2089](https://github.com/redis/ioredis/pull/2089) | ✅ **Merged** (2026-04-07) |
 | Tedious (MSSQL) | `tedious` | `packages/node/src/integrations/tracing/tedious.ts` | [tedious#1727](https://github.com/tediousjs/tedious/issues/1727) | — | 💬 Issue opened |
@@ -87,7 +87,7 @@ Core logic is ours — only OTel base classes need swapping.
 | Integration | Target Package | Sentry Location | Upstream Issue | Upstream PR | Status |
 |---|---|---|---|---|---|
 | OpenAI | `openai` | `packages/node/src/integrations/tracing/openai/` | [openai-node#1819](https://github.com/openai/openai-node/issues/1819) | — | 💬 Issue opened |
-| Anthropic AI | `@anthropic-ai/sdk` | `packages/node/src/integrations/tracing/anthropic-ai/` | — | — | ⬜ Not started |
+| Anthropic AI | `@anthropic-ai/sdk` | `packages/node/src/integrations/tracing/anthropic-ai/` | [anthropic-sdk-typescript#1036](https://github.com/anthropics/anthropic-sdk-typescript/issues/1036) | — | 💬 Issue opened |
 | Google GenAI | `@google/genai` | `packages/node/src/integrations/tracing/google-genai/` | — | — | ⬜ Not started |
 | LangChain | `langchain` / `@langchain/*` | `packages/node/src/integrations/tracing/langchain/` | — | — | ⬜ Not started |
 | LangGraph | `@langchain/langgraph` | `packages/node/src/integrations/tracing/langgraph/` | — | — | ⬜ Not started |
@@ -123,8 +123,8 @@ Core logic is ours — only OTel base classes need swapping.
 
 | Category | Total | ✅ Merged | 🟡 PR Open | 💬 In Discussion | ⬜ Not Started |
 |---|---|---|---|---|---|
-| OTel-provided | 24 | 4 (mysql2, fastify, redis, ioredis) | 4 (express, pg, knex, graphql) | 4 (mongodb, mongoose, tedious, prisma) | 11 + 1 📝 (koa) |
-| Sentry-built | 10 | 0 | 0 | 2 (hono, vercel-ai-node) | 8 |
+| OTel-provided | 24 | 4 (mysql2, fastify, redis, ioredis) | 5 (express, pg, knex, graphql, mongoose) | 3 (mongodb, tedious, prisma) | 11 + 1 📝 (koa) |
+| Sentry-built | 10 | 0 | 0 | 3 (hono, vercel-ai-node, anthropic-ai) | 7 |
 | Other (non-Sentry) | 8 | 6 | 1 (db0) | 1 (elysia) | 0 |
 | Logging | 2 | 1 (pino) | 0 | 0 | 0 + 1 📝 (consola) |
-| **Total** | **44** | **11** | **5** | **8** | **20** |
+| **Total** | **44** | **11** | **6** | **8** | **19** |
