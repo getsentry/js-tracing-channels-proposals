@@ -30,27 +30,29 @@ If the Anthropic SDK emits structured events through `TracingChannel`, instrumen
 
 ## Proposed Tracing Channels
 
-All channels use the Node.js [`TracingChannel`](https://nodejs.org/api/diagnostics_channel.html#class-tracingchannel) API, which provides `start`, `end`, `asyncStart`, `asyncEnd`, and `error` sub-channels automatically.
+All channels use the Node.js [`TracingChannel`](https://nodejs.org/api/diagnostics_channel.html#class-tracingchannel) API, which provides `start`, `end`, `asyncStart`, `asyncEnd`, and `error` sub-channels automatically. The channel design aims to support the [OpenTelemetry Semantic Conventions for Generative AI](https://opentelemetry.io/docs/specs/semconv/gen-ai/) systems, enabling APM vendors to produce standard `gen_ai.*` spans and attributes from the emitted events.
 
 | TracingChannel | Tracks | Context fields |
 |---|---|---|
-| `@anthropic-ai/sdk:messages` | Message creation, from request to full response (or stream completion) | `method`, `model`, `stream`, `params` |
+| `@anthropic-ai/sdk:messages.create` | Non-streaming message creation (`messages.create` without `stream: true`) | `model`, `params` |
+| `@anthropic-ai/sdk:messages.stream` | Streaming message creation (`messages.stream()` or `messages.create` with `stream: true`), from request initiation to stream completion | `model`, `params` |
+| `@anthropic-ai/sdk:completions.create` | Legacy completions endpoint | `model`, `params` |
 
-A single channel covers all message-related operations because they share the same context shape and lifecycle. The `method` discriminator distinguishes between `messages.create`, `messages.stream`, and `beta.messages.create`.
+### Why Separate Channels
 
-### Why One Channel
+Each API method gets its own `TracingChannel`. This follows the `diagnostics_channel` design philosophy: many purpose-focused channels with their own subscriber sets, so dispatch is extremely cheap. Subscribers listen only to the operations they care about rather than filtering a firehose channel, which would add continuous overhead on every published message.
 
-Unlike the OpenAI SDK proposal (which has separate `openai:chat` and `openai:embeddings` channels), the Anthropic SDK has a much narrower API surface. The primary operation is message creation. There is no embeddings endpoint, no image generation, no audio API. The legacy `completions.create` endpoint shares the same request/response shape. A single channel keeps things simple without sacrificing expressiveness.
+This also eliminates the need for a `method` discriminator field in the context — the channel name itself identifies the operation.
 
-Operations like `messages.countTokens`, `models.get`, and `messages.batches.create` are administrative/utility calls that don't represent AI inference operations. APMs generally don't create GenAI spans for these. They are excluded to keep the channel focused on the operations that matter for tracing.
+Operations like `messages.countTokens`, `models.get`, and `messages.batches.create` are administrative/utility calls that don't represent AI inference operations. APMs generally don't create GenAI spans for these. They are excluded to keep the channels focused on the operations that matter for tracing.
 
-### `@anthropic-ai/sdk:messages` Context Properties
+### Context Properties
+
+Shared across all channels:
 
 | Field | Source | OTel attribute it enables |
 |---|---|---|
-| `method` | API method path: `'messages.create'`, `'messages.stream'`, `'beta.messages.create'`, `'completions.create'` | Distinguishes API surface. APMs use this to select the correct response parser |
 | `model` | `params.model` | `gen_ai.request.model` |
-| `stream` | `true` for `messages.stream()` or when `params.stream === true` | `gen_ai.request.stream`. Signals that the span should cover the full streaming lifecycle |
 | `params` | Raw request parameters object | APMs extract: `gen_ai.request.temperature`, `gen_ai.request.top_p`, `gen_ai.request.top_k`, `gen_ai.request.max_tokens`, `gen_ai.input.messages`, `gen_ai.system_instructions`, `gen_ai.request.available_tools` |
 | `result` | Raw response object (auto-set by TracingChannel on completion) | APMs extract: `gen_ai.response.id`, `gen_ai.response.model`, `gen_ai.response.finish_reasons`, `gen_ai.usage.input_tokens`, `gen_ai.usage.output_tokens`, `gen_ai.usage.cache_creation_input_tokens`, `gen_ai.usage.cache_read_input_tokens`, `gen_ai.response.text`, `gen_ai.response.tool_calls` |
 
@@ -59,7 +61,7 @@ Operations like `messages.countTokens`, `models.get`, and `messages.batches.crea
 The context passes raw `params` and the auto-set `result` (the API response) rather than pre-extracting individual attributes. This follows the pattern established by framework TracingChannel proposals (h3, Hono, Elysia) where raw objects are passed and APMs extract what they need. Benefits:
 
 1. **Forward-compatible.** New API parameters and response fields (thinking, citations, new content block types) are automatically available to subscribers without SDK changes.
-2. **No duplication.** Extracted fields like `model` are convenience accessors for the most common attributes. Everything else comes from the raw objects.
+2. **No duplication.** `model` is a convenience accessor for the most common attribute. Everything else comes from the raw objects.
 3. **Privacy is the subscriber's concern.** The SDK emits what it has. APMs decide what to record based on their own `recordInputs`/`recordOutputs` policies.
 
 ---
@@ -80,25 +82,31 @@ A simplified sketch of what the instrumentation looks like inside the SDK:
 
 ```ts
 import dc from 'node:diagnostics_channel';
-const messagesChannel = dc.tracingChannel('@anthropic-ai/sdk:messages');
+const messagesCreateChannel = dc.tracingChannel('@anthropic-ai/sdk:messages.create');
+const messagesStreamChannel = dc.tracingChannel('@anthropic-ai/sdk:messages.stream');
 
-// Inside messages.create
+// Inside messages.create (non-streaming)
 async function create(params) {
-  if (messagesChannel.hasSubscribers === false) {
+  if (messagesCreateChannel.hasSubscribers === false) {
     return this._makeRequest(params);
   }
 
-  const context = {
-    method: 'messages.create',
-    model: params.model,
-    stream: !!params.stream,
-    params,
-  };
-  return messagesChannel.tracePromise(() => this._makeRequest(params), context);
+  const context = { model: params.model, params };
+  return messagesCreateChannel.tracePromise(() => this._makeRequest(params), context);
+}
+
+// Inside messages.stream
+async function stream(params) {
+  if (messagesStreamChannel.hasSubscribers === false) {
+    return this._makeStreamingRequest(params);
+  }
+
+  const context = { model: params.model, params };
+  return messagesStreamChannel.tracePromise(() => this._makeStreamingRequest(params), context);
 }
 ```
 
-Fewer than 15 lines of code in the SDK. No Proxy, no constructor wrapping, no stream accumulation logic pushed onto consumers.
+Each method gets its own channel. No Proxy, no constructor wrapping, no stream accumulation logic pushed onto consumers.
 
 ---
 
@@ -127,9 +135,10 @@ This approach has several problems:
 ```ts
 import dc from 'node:diagnostics_channel';
 
-dc.tracingChannel('@anthropic-ai/sdk:messages').subscribe({
+// Subscribe to each channel independently — only pay for what you listen to
+const handlers = {
   start(ctx) {
-    // ctx.method, ctx.model, ctx.stream, ctx.params available
+    // ctx.model, ctx.params available
     ctx.span = tracer.startSpan(`chat ${ctx.model}`);
   },
   asyncEnd(ctx) {
@@ -140,7 +149,10 @@ dc.tracingChannel('@anthropic-ai/sdk:messages').subscribe({
   error(ctx) {
     ctx.span?.recordException(ctx.error);
   },
-});
+};
+
+dc.tracingChannel('@anthropic-ai/sdk:messages.create').subscribe(handlers);
+dc.tracingChannel('@anthropic-ai/sdk:messages.stream').subscribe(handlers);
 ```
 
 **What changes for APM vendors:**
@@ -148,7 +160,7 @@ dc.tracingChannel('@anthropic-ai/sdk:messages').subscribe({
 | Concern | Monkey-patching (today) | TracingChannel (proposed) |
 |---|---|---|
 | **Setup** | IITM intercepts `require('@anthropic-ai/sdk')` before first import | Subscribe to `diagnostics_channel` at any time. No ordering constraint |
-| **Scope** | Replace constructor + deep Proxy on every client instance | One channel subscription |
+| **Scope** | Replace constructor + deep Proxy on every client instance | One subscription per method of interest |
 | **Method interception** | Recursive Proxy intercepts every property access on the client, even non-traced methods | No proxying. SDK emits events at execution time, subscribers observe |
 | **Streaming** | Each vendor independently processes streaming events, accumulates content blocks, reconstructs tool calls from fragmented events | SDK handles accumulation internally; subscribers see a single span with the final message |
 | **Multi-vendor** | Each vendor builds their own deep-proxy + stream accumulation logic | Independent subscribers, no interference |
@@ -187,9 +199,9 @@ This treats `undefined` (Node 18, where the aggregated `hasSubscribers` is broke
 Context objects should only be constructed inside a `hasSubscribers` guard:
 
 ```ts
-if (shouldTrace(messagesChannel)) {
-  const context = { method, model: params.model, stream: !!params.stream, params };
-  return messagesChannel.tracePromise(fn, context);
+if (shouldTrace(messagesCreateChannel)) {
+  const context = { model: params.model, params };
+  return messagesCreateChannel.tracePromise(fn, context);
 } else {
   return fn();
 }
