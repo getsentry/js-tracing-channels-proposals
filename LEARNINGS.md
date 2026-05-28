@@ -17,6 +17,13 @@ Name channels after what the operation *is*, not what method the user called: `p
 
 Separate channels when the span-naming strategy or payload shape differs. Merge when they don't. Stored procedures (span named after procedure), SQL queries (span named after sanitized query text), and bulk loads (span named after table) warrant separate channels. Two methods that do the same thing with different parameterization can share one.
 
+### Dispatch is cheap, filtering is not (@anthropic-ai/sdk, 2026-05-19)
+
+**From:** [anthropics/anthropic-sdk-typescript#1036](https://github.com/anthropics/anthropic-sdk-typescript/issues/1036)
+**Reviewer:** @Qard (diagnostics_channel creator)
+
+The `diagnostics_channel` API is designed so that having many purpose-focused channels with their own subscriber sets makes dispatch extremely cheap. A firehose channel that requires subscribers to filter out messages they don't want adds continuous overhead on every published message — even for messages the subscriber will discard. The cost model favors N narrow channels over 1 wide channel + N filters. This is a stronger argument than semantic clarity alone: it's about the runtime cost model of the API itself.
+
 ### Frameworks need fewer channels than databases
 
 Database operations (query, connect, pool acquire) are semantically distinct and warrant separate channels. HTTP framework lifecycle phases (onRequest, handle, afterHandle) are stages of the same request — use a single channel with a discriminator field like `lifecycle` rather than N channels for a pipeline.

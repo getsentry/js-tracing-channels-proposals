@@ -1,7 +1,7 @@
 # TracingChannel Migration Tracker
 
 > Adding native `diagnostics_channel` `TracingChannel` support to benefit all observability tools, including OTel, Sentry, Datadog, and others.
-> 34 total instrumentations in Sentry JS SDK: 24 OTel-provided + 10 Sentry-built. 44 total tracked.
+> 34 total instrumentations in Sentry JS SDK: 24 OTel-provided + 10 Sentry-built. 45 total tracked.
 
 | Emoji | Status |
 |---|---|
@@ -91,7 +91,7 @@ Core logic is ours — only OTel base classes need swapping.
 | Google GenAI | `@google/genai` | `packages/node/src/integrations/tracing/google-genai/` | — | — | ⬜ Not started |
 | LangChain | `langchain` / `@langchain/*` | `packages/node/src/integrations/tracing/langchain/` | — | — | ⬜ Not started |
 | LangGraph | `@langchain/langgraph` | `packages/node/src/integrations/tracing/langgraph/` | — | — | ⬜ Not started |
-| Vercel AI (Node) | `ai` | `packages/node/src/integrations/tracing/vercelai/` | [ai#14410](https://github.com/vercel/ai/issues/14410) | — | 💬 Issue opened |
+| Vercel AI (Node) | `ai` | `packages/node/src/integrations/tracing/vercelai/` | [ai#14410](https://github.com/vercel/ai/issues/14410) | [ai#15660](https://github.com/vercel/ai/pull/15660) | 🟡 PR open |
 | Vercel AI (Cloudflare) | `ai` | `packages/cloudflare/src/integrations/tracing/vercelai.ts` | — | — | ⬜ Not started |
 
 ## Other TracingChannel PRs (not in Sentry tracker)
@@ -105,6 +105,7 @@ Core logic is ours — only OTel base classes need swapping.
 | unstorage | [sentry-javascript#18022](https://github.com/getsentry/sentry-javascript/issues/18022) | [unjs/unstorage#707](https://github.com/unjs/unstorage/pull/707) | ✅ **Merged** (2026-02-25) |
 | db0 | [sentry-javascript#18023](https://github.com/getsentry/sentry-javascript/issues/18023) | [unjs/db0#193](https://github.com/unjs/db0/pull/193) | 🟡 PR open |
 | Nitro | — | [nitrojs/nitro#4001](https://github.com/nitrojs/nitro/pull/4001) (pi0) | ✅ **Merged** (2026-04-13) |
+| Nuxt | — | [nuxt/nuxt#35191](https://github.com/nuxt/nuxt/pull/35191) (danielroe) | 🟡 PR open |
 | Elysia | — | [elysiajs/elysia#1809](https://github.com/elysiajs/elysia/issues/1809) | 💬 In discussion |
 
 ## Logging Libraries
@@ -124,7 +125,7 @@ Core logic is ours — only OTel base classes need swapping.
 | Category | Total | ✅ Merged | 🟡 PR Open | 💬 In Discussion | ⬜ Not Started |
 |---|---|---|---|---|---|
 | OTel-provided | 24 | 4 (mysql2, fastify, redis, ioredis) | 5 (express, pg, knex, graphql, mongoose) | 3 (mongodb, tedious, prisma) | 11 + 1 📝 (koa) |
-| Sentry-built | 10 | 0 | 0 | 3 (hono, vercel-ai-node, anthropic-ai) | 7 |
-| Other (non-Sentry) | 8 | 6 | 1 (db0) | 1 (elysia) | 0 |
+| Sentry-built | 10 | 0 | 1 (vercel-ai) | 2 (hono, anthropic-ai) | 7 |
+| Other (non-Sentry) | 9 | 6 | 2 (db0, nuxt) | 1 (elysia) | 0 |
 | Logging | 2 | 1 (pino) | 0 | 0 | 0 + 1 📝 (consola) |
-| **Total** | **44** | **11** | **6** | **8** | **19** |
+| **Total** | **45** | **11** | **8** | **7** | **19** |
