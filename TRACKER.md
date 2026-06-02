@@ -46,7 +46,7 @@ These currently rely on external monkey-patching infrastructure (IITM/RITM) and 
 
 | Integration | Target Package | Sentry Location | Upstream Issue | Upstream PR | Status |
 |---|---|---|---|---|---|
-| GraphQL | `graphql` | `packages/node/src/integrations/tracing/graphql.ts` | [graphql-js#4629](https://github.com/graphql/graphql-js/issues/4629) | [graphql-js#4670](https://github.com/graphql/graphql-js/pull/4670) | 🟡 PR open |
+| GraphQL | `graphql` | `packages/node/src/integrations/tracing/graphql.ts` | [graphql-js#4629](https://github.com/graphql/graphql-js/issues/4629) | [graphql-js#4670](https://github.com/graphql/graphql-js/pull/4670) | ✅ **Merged** (2026-06-02) |
 
 ### Message Queues
 
@@ -124,8 +124,8 @@ Core logic is ours — only OTel base classes need swapping.
 
 | Category | Total | ✅ Merged | 🟡 PR Open | 💬 In Discussion | ⬜ Not Started |
 |---|---|---|---|---|---|
-| OTel-provided | 24 | 4 (mysql2, fastify, redis, ioredis) | 5 (express, pg, knex, graphql, mongoose) | 3 (mongodb, tedious, prisma) | 11 + 1 📝 (koa) |
+| OTel-provided | 24 | 5 (mysql2, fastify, redis, ioredis, graphql) | 4 (express, pg, knex, mongoose) | 3 (mongodb, tedious, prisma) | 11 + 1 📝 (koa) |
 | Sentry-built | 10 | 0 | 1 (vercel-ai) | 2 (hono, anthropic-ai) | 7 |
 | Other (non-Sentry) | 9 | 6 | 2 (db0, nuxt) | 1 (elysia) | 0 |
 | Logging | 2 | 1 (pino) | 0 | 0 | 0 + 1 📝 (consola) |
-| **Total** | **45** | **11** | **8** | **7** | **19** |
+| **Total** | **45** | **12** | **7** | **7** | **19** |
