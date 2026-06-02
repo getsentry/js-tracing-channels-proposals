@@ -79,7 +79,7 @@ Core logic is ours — only OTel base classes need swapping.
 | Integration | Target Package | Sentry Location | Upstream Issue | Upstream PR | Status |
 |---|---|---|---|---|---|
 | Hono | `hono` | `packages/node/src/integrations/tracing/hono/` | [hono#4842](https://github.com/honojs/hono/issues/4842) | — | 💬 Issue opened |
-| Postgres.js | `postgres` | `packages/node/src/integrations/tracing/postgresjs.ts` | — | — | ⬜ Not started |
+| Postgres.js | `postgres` | `packages/node/src/integrations/tracing/postgresjs.ts` | [postgres#1171](https://github.com/porsager/postgres/issues/1171) | — | 💬 Issue opened |
 | Firebase | `firebase-admin` | `packages/node/src/integrations/tracing/firebase/` | — | — | ⬜ Not started |
 
 ### AI / ML Providers
@@ -125,7 +125,7 @@ Core logic is ours — only OTel base classes need swapping.
 | Category | Total | ✅ Merged | 🟡 PR Open | 💬 In Discussion | ⬜ Not Started |
 |---|---|---|---|---|---|
 | OTel-provided | 24 | 5 (mysql2, fastify, redis, ioredis, graphql) | 4 (express, pg, knex, mongoose) | 3 (mongodb, tedious, prisma) | 11 + 1 📝 (koa) |
-| Sentry-built | 10 | 0 | 1 (vercel-ai) | 2 (hono, anthropic-ai) | 7 |
+| Sentry-built | 10 | 0 | 1 (vercel-ai) | 3 (hono, anthropic-ai, postgres.js) | 6 |
 | Other (non-Sentry) | 9 | 6 | 2 (db0, nuxt) | 1 (elysia) | 0 |
 | Logging | 2 | 1 (pino) | 0 | 0 | 0 + 1 📝 (consola) |
-| **Total** | **45** | **12** | **7** | **7** | **19** |
+| **Total** | **45** | **12** | **7** | **8** | **18** |
