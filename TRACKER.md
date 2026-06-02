@@ -91,7 +91,7 @@ Core logic is ours — only OTel base classes need swapping.
 | Google GenAI | `@google/genai` | `packages/node/src/integrations/tracing/google-genai/` | — | — | ⬜ Not started |
 | LangChain | `langchain` / `@langchain/*` | `packages/node/src/integrations/tracing/langchain/` | — | — | ⬜ Not started |
 | LangGraph | `@langchain/langgraph` | `packages/node/src/integrations/tracing/langgraph/` | — | — | ⬜ Not started |
-| Vercel AI (Node) | `ai` | `packages/node/src/integrations/tracing/vercelai/` | [ai#14410](https://github.com/vercel/ai/issues/14410) | [ai#15660](https://github.com/vercel/ai/pull/15660) | 🟡 PR open |
+| Vercel AI (Node) | `ai` | `packages/node/src/integrations/tracing/vercelai/` | [ai#14410](https://github.com/vercel/ai/issues/14410) | [ai#15660](https://github.com/vercel/ai/pull/15660) (Vercel-driven) | 🟡 PR open |
 | Vercel AI (Cloudflare) | `ai` | `packages/cloudflare/src/integrations/tracing/vercelai.ts` | — | — | ⬜ Not started |
 
 ## Other TracingChannel PRs (not in Sentry tracker)
