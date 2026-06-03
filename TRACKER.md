@@ -35,7 +35,7 @@ These currently rely on external monkey-patching infrastructure (IITM/RITM) and 
 | MySQL | `mysql` | `packages/node/src/integrations/tracing/mysql.ts` | — | — | 🔴 Unmaintained — use `mysql2` |
 | MySQL2 | `mysql2` | `packages/node/src/integrations/tracing/mysql2.ts` | [node-mysql2#4174](https://github.com/sidorares/node-mysql2/issues/4174) | [node-mysql2#4178](https://github.com/sidorares/node-mysql2/pull/4178) | ✅ **Merged** (2026-03-14) |
 | MongoDB | `mongodb` | `packages/node/src/integrations/tracing/mongo.ts` | [NODE-7472](https://jira.mongodb.org/browse/NODE-7472) | — | 💬 Issue opened |
-| Mongoose | `mongoose` | `packages/node/src/integrations/tracing/mongoose.ts` | [mongoose#16105](https://github.com/Automattic/mongoose/issues/16105) | [mongoose#16275](https://github.com/Automattic/mongoose/pull/16275) | 🟡 PR open |
+| Mongoose | `mongoose` | `packages/node/src/integrations/tracing/mongoose.ts` | [mongoose#16105](https://github.com/Automattic/mongoose/issues/16105) | [mongoose#16275](https://github.com/Automattic/mongoose/pull/16275) | ✅ **Merged** (2026-06-03) |
 | Redis | `redis` | `packages/node/src/integrations/tracing/redis.ts` | [node-redis#2590](https://github.com/redis/node-redis/issues/2590) | [node-redis#3195](https://github.com/redis/node-redis/pull/3195) | ✅ **Merged** (2026-04-02) |
 | IORedis | `ioredis` | `packages/node/src/integrations/tracing/redis.ts` | — | [ioredis#2089](https://github.com/redis/ioredis/pull/2089) | ✅ **Merged** (2026-04-07) |
 | Tedious (MSSQL) | `tedious` | `packages/node/src/integrations/tracing/tedious.ts` | [tedious#1727](https://github.com/tediousjs/tedious/issues/1727) | — | 💬 Issue opened |
@@ -124,8 +124,8 @@ Core logic is ours — only OTel base classes need swapping.
 
 | Category | Total | ✅ Merged | 🟡 PR Open | 💬 In Discussion | ⬜ Not Started |
 |---|---|---|---|---|---|
-| OTel-provided | 24 | 5 (mysql2, fastify, redis, ioredis, graphql) | 4 (express, pg, knex, mongoose) | 3 (mongodb, tedious, prisma) | 11 + 1 📝 (koa) |
+| OTel-provided | 24 | 6 (mysql2, fastify, redis, ioredis, graphql, mongoose) | 3 (express, pg, knex) | 3 (mongodb, tedious, prisma) | 11 + 1 📝 (koa) |
 | Sentry-built | 10 | 0 | 1 (vercel-ai) | 3 (hono, anthropic-ai, postgres.js) | 6 |
 | Other (non-Sentry) | 9 | 6 | 2 (db0, nuxt) | 1 (elysia) | 0 |
 | Logging | 2 | 1 (pino) | 0 | 0 | 0 + 1 📝 (consola) |
-| **Total** | **45** | **12** | **7** | **8** | **18** |
+| **Total** | **45** | **13** | **6** | **8** | **18** |
