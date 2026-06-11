@@ -1,7 +1,7 @@
 # TracingChannel Migration Tracker
 
 > Adding native `diagnostics_channel` `TracingChannel` support to benefit all observability tools, including OTel, Sentry, Datadog, and others.
-> 34 total instrumentations in Sentry JS SDK: 24 OTel-provided + 10 Sentry-built. 45 total tracked.
+> 35 total instrumentations in Sentry JS SDK: 24 OTel-provided + 11 Sentry-built. 46 total tracked.
 
 | Emoji | Status |
 |---|---|
@@ -70,7 +70,7 @@ These currently rely on external monkey-patching infrastructure (IITM/RITM) and 
 | FS | `fs` (Node built-in) | `packages/node/src/integrations/fs.ts` | — | — | ⬜ Not started |
 | Undici | `undici` / native fetch | `packages/node/src/integrations/node-fetch.ts` | — | — | ⬜ Not started |
 
-## Sentry-Built (10) — Need API Migration Only
+## Sentry-Built (11) — Need API Migration Only
 
 Core logic is ours — only OTel base classes need swapping.
 
@@ -80,6 +80,7 @@ Core logic is ours — only OTel base classes need swapping.
 |---|---|---|---|---|---|
 | Hono | `hono` | `packages/node/src/integrations/tracing/hono/` | [hono#4842](https://github.com/honojs/hono/issues/4842) | — | 💬 Issue opened |
 | Postgres.js | `postgres` | `packages/node/src/integrations/tracing/postgresjs.ts` | [postgres#1171](https://github.com/porsager/postgres/issues/1171) | — | 💬 Issue opened |
+| TanStack Start | `@tanstack/start` | `packages/tanstackstart-react/` | [TanStack/router#7604](https://github.com/TanStack/router/discussions/7604) (discussion) | — | 💬 Discussion open |
 | Firebase | `firebase-admin` | `packages/node/src/integrations/tracing/firebase/` | — | — | ⬜ Not started |
 
 ### AI / ML Providers
@@ -125,7 +126,7 @@ Core logic is ours — only OTel base classes need swapping.
 | Category | Total | ✅ Merged | 🟡 PR Open | 💬 In Discussion | ⬜ Not Started |
 |---|---|---|---|---|---|
 | OTel-provided | 24 | 6 (mysql2, fastify, redis, ioredis, graphql, mongoose) | 3 (express, pg, knex) | 3 (mongodb, tedious, prisma) | 11 + 1 📝 (koa) |
-| Sentry-built | 10 | 0 | 1 (vercel-ai) | 3 (hono, anthropic-ai, postgres.js) | 6 |
+| Sentry-built | 11 | 0 | 1 (vercel-ai) | 4 (hono, anthropic-ai, postgres.js, tanstack-start) | 6 |
 | Other (non-Sentry) | 9 | 6 | 2 (db0, nuxt) | 1 (elysia) | 0 |
 | Logging | 2 | 1 (pino) | 0 | 0 | 0 + 1 📝 (consola) |
-| **Total** | **45** | **13** | **6** | **8** | **18** |
+| **Total** | **46** | **13** | **6** | **9** | **18** |
