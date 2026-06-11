@@ -12,63 +12,102 @@
 | ⬜ | Not started |
 | 🔴 | No go — unmaintained / not viable |
 
+> `~DL/mo` = rough monthly npm downloads, rounded to the nearest million. A back-of-envelope reach estimate, not kept in sync — see [Ecosystem Reach](#-ecosystem-reach-rough).
+
+## 📊 Ecosystem Reach (rough)
+
+A back-of-envelope sense of the monthly-download **footprint** of the libraries in this list, and how much of it has — or is getting — a native `TracingChannel`.
+
+> ⚠️ **Read this as a rough footprint, not adoption.** Important caveats:
+> - **Downloads ≠ apps.** These libraries are used *together* (one service pulls `express` + `pg` + `redis` + `pino`), so summing downloads counts the same apps many times. This is a download-weighted footprint with each library counted independently — **not "% of applications traced."**
+> - **Version lag.** A channel only exists in the *newest* release, but the download counts include every old version. "Shipped" reflects reach *once users upgrade*, not today. Notably **`graphql` (~169M) shipped only in v17.0.0-rc.0** — a pre-release almost nobody runs in prod, so its real adoption today is ~0 — and **`mongoose` v9.7.0 is days old**.
+> - **Transitive/CI pulls** inflate every number; npm downloads aren't distinct users.
+>
+> Treat these as order-of-magnitude indicators for prioritization, not precise coverage. **Method:** monthly npm downloads per package; built-ins (`http`, `fs`) and no-go/skipped rows excluded.
+
+### What Sentry has driven
+
+Channels merged through this initiative cover libraries pulling **~366M downloads/mo** combined — a proxy for eventual reach as users upgrade, **not** current adoption:
+
+| Library | ~DL/mo | Shipped as | Adoptable today? |
+|---|---|---|---|
+| graphql | ~169M | v17.0.0-rc.0 | ⏳ pre-release only — adoption ~0 for now |
+| ioredis | ~83M | stable | ✅ |
+| mysql2 | ~47M | stable | ✅ |
+| redis (node-redis) | ~44M | stable | ✅ |
+| mongoose | ~23M | v9.7.0 | 🆕 released days ago — ramping |
+
+**In a stable release people can adopt now:** ~174M/mo (ioredis + mysql2 + redis). graphql (~169M) is landed but pre-release-only; mongoose (~23M) just shipped.
+
+### Footprint by status (download-weighted — see caveats)
+
+| Bucket | ~DL/mo footprint |
+|---|---|
+| Native channel exists upstream (any release) | ~1,220M |
+| &nbsp;&nbsp;— Sentry-driven | ~366M |
+| &nbsp;&nbsp;— Independent (undici ~476M Node core, pino ~142M, fastify ~33M) | ~650M |
+| &nbsp;&nbsp;— unjs / community (h3, srvx, unstorage, nitro) | ~200M |
+| Sentry in-flight (PRs + issues + discussions) | ~1,390M |
+
+The "exists upstream" bucket is dominated by **independent work — chiefly undici (~476M, Node core)** — that Sentry did not drive. Sentry's concrete contribution is the **~366M it drove to merge** (of which ~174M is in stable releases today) plus a sizeable in-flight pipeline. The honest framing for a deck: *"Sentry authored and merged native tracing into libraries pulling hundreds of millions of monthly downloads — including the most-used Redis, MySQL, and ODM clients — and has more in review,"* rather than a single coverage-% claim.
+
 ## OTel-Provided (24) — Need Native TracingChannel Support
 
 These currently rely on external monkey-patching infrastructure (IITM/RITM) and would benefit from native TracingChannel support.
 
 ### HTTP / Web Frameworks
 
-| Integration | Target Package | Sentry Location | Upstream Issue | Upstream PR | Status |
-|---|---|---|---|---|---|
-| HTTP | `http`/`https` (Node built-in) | `packages/node/src/integrations/http.ts` | — | — | ⬜ Not started |
-| Express | `express` | `packages/node/src/integrations/tracing/express.ts` | [express#6353](https://github.com/expressjs/express/issues/6353) | [pillarjs/router#196](https://github.com/pillarjs/router/pull/196) | 🟡 PR open |
-| Fastify | `fastify` | `packages/node/src/integrations/tracing/fastify/` | — | — | ✅ Ships TracingChannel natively (`tracing:fastify.request.handler`) |
-| Koa | `koa` | `packages/node/src/integrations/tracing/koa.ts` | — | — | 📝 Proposal drafted |
-| Hapi | `@hapi/hapi` | `packages/node/src/integrations/tracing/hapi/` | — | — | ⬜ Not started |
-| Connect | `connect` | `packages/node/src/integrations/tracing/connect.ts` | — | — | ⬜ Not started |
+| Integration | Target Package | ~DL/mo | Sentry Location | Upstream Issue | Upstream PR | Status |
+|---|---|---|---|---|---|---|
+| HTTP | `http`/`https` (Node built-in) | built-in | `packages/node/src/integrations/http.ts` | — | — | ⬜ Not started |
+| Express | `express` | ~449M | `packages/node/src/integrations/tracing/express.ts` | [express#6353](https://github.com/expressjs/express/issues/6353) | [pillarjs/router#196](https://github.com/pillarjs/router/pull/196) | 🟡 PR open |
+| Fastify | `fastify` | ~33M | `packages/node/src/integrations/tracing/fastify/` | — | — | ✅ Ships TracingChannel natively (`tracing:fastify.request.handler`) |
+| Koa | `koa` | ~32M | `packages/node/src/integrations/tracing/koa.ts` | — | — | 📝 Proposal drafted |
+| Hapi | `@hapi/hapi` | ~6M | `packages/node/src/integrations/tracing/hapi/` | — | — | ⬜ Not started |
+| Connect | `connect` | ~63M | `packages/node/src/integrations/tracing/connect.ts` | — | — | ⬜ Not started |
 
 ### Databases
 
-| Integration | Target Package | Sentry Location | Upstream Issue | Upstream PR | Status |
-|---|---|---|---|---|---|
-| PostgreSQL | `pg` | `packages/node/src/integrations/tracing/postgres.ts` | [node-postgres#3619](https://github.com/brianc/node-postgres/issues/3619) | [node-postgres#3650](https://github.com/brianc/node-postgres/pull/3650) | 🟡 PR open (replaces closed #3624) |
-| MySQL | `mysql` | `packages/node/src/integrations/tracing/mysql.ts` | — | — | 🔴 Unmaintained — use `mysql2` |
-| MySQL2 | `mysql2` | `packages/node/src/integrations/tracing/mysql2.ts` | [node-mysql2#4174](https://github.com/sidorares/node-mysql2/issues/4174) | [node-mysql2#4178](https://github.com/sidorares/node-mysql2/pull/4178) | ✅ **Merged** (2026-03-14) |
-| MongoDB | `mongodb` | `packages/node/src/integrations/tracing/mongo.ts` | [NODE-7472](https://jira.mongodb.org/browse/NODE-7472) | — | 💬 Issue opened |
-| Mongoose | `mongoose` | `packages/node/src/integrations/tracing/mongoose.ts` | [mongoose#16105](https://github.com/Automattic/mongoose/issues/16105) | [mongoose#16275](https://github.com/Automattic/mongoose/pull/16275) | ✅ **Merged & released** (v9.7.0, 2026-06-09) |
-| Redis | `redis` | `packages/node/src/integrations/tracing/redis.ts` | [node-redis#2590](https://github.com/redis/node-redis/issues/2590) | [node-redis#3195](https://github.com/redis/node-redis/pull/3195) | ✅ **Merged** (2026-04-02) |
-| IORedis | `ioredis` | `packages/node/src/integrations/tracing/redis.ts` | — | [ioredis#2089](https://github.com/redis/ioredis/pull/2089) | ✅ **Merged** (2026-04-07) |
-| Tedious (MSSQL) | `tedious` | `packages/node/src/integrations/tracing/tedious.ts` | [tedious#1727](https://github.com/tediousjs/tedious/issues/1727) | — | 💬 Issue opened |
-| Knex | `knex` | `packages/node/src/integrations/tracing/knex.ts` | [knex#6394](https://github.com/knex/knex/issues/6394) | [knex#6410](https://github.com/knex/knex/pull/6410) | 🟡 PR open |
-| Prisma | `prisma` | `packages/node/src/integrations/tracing/prisma.ts` | [prisma#29353](https://github.com/prisma/prisma/issues/29353) | — | 💬 Issue opened |
+| Integration | Target Package | ~DL/mo | Sentry Location | Upstream Issue | Upstream PR | Status |
+|---|---|---|---|---|---|---|
+| PostgreSQL | `pg` | ~126M | `packages/node/src/integrations/tracing/postgres.ts` | [node-postgres#3619](https://github.com/brianc/node-postgres/issues/3619) | [node-postgres#3650](https://github.com/brianc/node-postgres/pull/3650) | 🟡 PR open (replaces closed #3624) |
+| MySQL | `mysql` | ~6M | `packages/node/src/integrations/tracing/mysql.ts` | — | — | 🔴 Unmaintained — use `mysql2` |
+| MySQL2 | `mysql2` | ~47M | `packages/node/src/integrations/tracing/mysql2.ts` | [node-mysql2#4174](https://github.com/sidorares/node-mysql2/issues/4174) | [node-mysql2#4178](https://github.com/sidorares/node-mysql2/pull/4178) | ✅ **Merged** (2026-03-14) |
+| MongoDB | `mongodb` | ~51M | `packages/node/src/integrations/tracing/mongo.ts` | [NODE-7472](https://jira.mongodb.org/browse/NODE-7472) | — | 💬 Issue opened |
+| Mongoose | `mongoose` | ~23M | `packages/node/src/integrations/tracing/mongoose.ts` | [mongoose#16105](https://github.com/Automattic/mongoose/issues/16105) | [mongoose#16275](https://github.com/Automattic/mongoose/pull/16275) | ✅ **Merged & released** (v9.7.0, 2026-06-09) |
+| Redis | `redis` | ~44M | `packages/node/src/integrations/tracing/redis.ts` | [node-redis#2590](https://github.com/redis/node-redis/issues/2590) | [node-redis#3195](https://github.com/redis/node-redis/pull/3195) | ✅ **Merged** (2026-04-02) |
+| IORedis | `ioredis` | ~83M | `packages/node/src/integrations/tracing/redis.ts` | — | [ioredis#2089](https://github.com/redis/ioredis/pull/2089) | ✅ **Merged** (2026-04-07) |
+| Tedious (MSSQL) | `tedious` | ~16M | `packages/node/src/integrations/tracing/tedious.ts` | [tedious#1727](https://github.com/tediousjs/tedious/issues/1727) | — | 💬 Issue opened |
+| Knex | `knex` | ~19M | `packages/node/src/integrations/tracing/knex.ts` | [knex#6394](https://github.com/knex/knex/issues/6394) | [knex#6410](https://github.com/knex/knex/pull/6410) | 🟡 PR open |
+| Prisma | `prisma` | ~52M | `packages/node/src/integrations/tracing/prisma.ts` | [prisma#29353](https://github.com/prisma/prisma/issues/29353) | — | 💬 Issue opened |
 
 ### GraphQL
 
-| Integration | Target Package | Sentry Location | Upstream Issue | Upstream PR | Status |
-|---|---|---|---|---|---|
-| GraphQL | `graphql` | `packages/node/src/integrations/tracing/graphql.ts` | [graphql-js#4629](https://github.com/graphql/graphql-js/issues/4629) | [graphql-js#4670](https://github.com/graphql/graphql-js/pull/4670) | ✅ **Merged & released** (v17.0.0-rc.0, 2026-06-02) |
+| Integration | Target Package | ~DL/mo | Sentry Location | Upstream Issue | Upstream PR | Status |
+|---|---|---|---|---|---|---|
+| GraphQL | `graphql` | ~169M | `packages/node/src/integrations/tracing/graphql.ts` | [graphql-js#4629](https://github.com/graphql/graphql-js/issues/4629) | [graphql-js#4670](https://github.com/graphql/graphql-js/pull/4670) | ✅ **Merged & released** (v17.0.0-rc.0, 2026-06-02) |
 
 ### Message Queues
 
-| Integration | Target Package | Sentry Location | Upstream Issue | Upstream PR | Status |
-|---|---|---|---|---|---|
-| Kafka | `kafkajs` | `packages/node/src/integrations/tracing/kafka.ts` | — | — | ⬜ Not started |
-| AMQP (RabbitMQ) | `amqplib` | `packages/node/src/integrations/tracing/amqplib.ts` | — | — | ⬜ Not started |
+| Integration | Target Package | ~DL/mo | Sentry Location | Upstream Issue | Upstream PR | Status |
+|---|---|---|---|---|---|---|
+| Kafka | `kafkajs` | ~12M | `packages/node/src/integrations/tracing/kafka.ts` | — | — | ⬜ Not started |
+| AMQP (RabbitMQ) | `amqplib` | ~11M | `packages/node/src/integrations/tracing/amqplib.ts` | — | — | ⬜ Not started |
 
 ### Utilities
 
-| Integration | Target Package | Sentry Location | Upstream Issue | Upstream PR | Status |
-|---|---|---|---|---|---|
-| DataLoader | `dataloader` | `packages/node/src/integrations/tracing/dataloader.ts` | — | — | ⬜ Not started |
-| Generic Pool | `generic-pool` | `packages/node/src/integrations/tracing/genericPool.ts` | — | — | ⬜ Not started |
-| LRU Memoizer | `lru-memoizer` | `packages/node/src/integrations/tracing/lrumemoizer.ts` | — | — | ⏭️ Skipped — thin wrapper over `lru-cache`, covered by lru-cache TracingChannel work |
+| Integration | Target Package | ~DL/mo | Sentry Location | Upstream Issue | Upstream PR | Status |
+|---|---|---|---|---|---|---|
+| DataLoader | `dataloader` | ~52M | `packages/node/src/integrations/tracing/dataloader.ts` | — | — | ⬜ Not started |
+| Generic Pool | `generic-pool` | ~42M | `packages/node/src/integrations/tracing/genericPool.ts` | — | — | ⬜ Not started |
+| LRU Memoizer | `lru-memoizer` | ~50M | `packages/node/src/integrations/tracing/lrumemoizer.ts` | — | — | ⏭️ Skipped — thin wrapper over `lru-cache`, covered by lru-cache TracingChannel work |
 
 ### Filesystem / Fetch
 
-| Integration | Target Package | Sentry Location | Upstream Issue | Upstream PR | Status |
-|---|---|---|---|---|---|
-| FS | `fs` (Node built-in) | `packages/node/src/integrations/fs.ts` | — | — | ⬜ Not started |
-| Undici | `undici` / native fetch | `packages/node/src/integrations/node-fetch.ts` | — | — | ⬜ Not started |
+| Integration | Target Package | ~DL/mo | Sentry Location | Upstream Issue | Upstream PR | Status |
+|---|---|---|---|---|---|---|
+| FS | `fs` (Node built-in) | built-in | `packages/node/src/integrations/fs.ts` | — | — | ⬜ Not started |
+| Undici | `undici` / native fetch | ~476M | `packages/node/src/integrations/node-fetch.ts` | — | — | ✅ Ships TracingChannel natively (`undici:request`, Node core) |
 
 ## Sentry-Built (11) — Need API Migration Only
 
@@ -76,45 +115,45 @@ Core logic is ours — only OTel base classes need swapping.
 
 ### Framework-Specific
 
-| Integration | Target Package | Sentry Location | Upstream Issue | Upstream PR | Status |
-|---|---|---|---|---|---|
-| Hono | `hono` | `packages/node/src/integrations/tracing/hono/` | [hono#4842](https://github.com/honojs/hono/issues/4842) | — | 💬 Issue opened |
-| Postgres.js | `postgres` | `packages/node/src/integrations/tracing/postgresjs.ts` | [postgres#1171](https://github.com/porsager/postgres/issues/1171) | — | 💬 Issue opened |
-| TanStack Start | `@tanstack/start` | `packages/tanstackstart-react/` | [TanStack/router#7604](https://github.com/TanStack/router/discussions/7604) (discussion) | — | 💬 Discussion open |
-| Firebase | `firebase-admin` | `packages/node/src/integrations/tracing/firebase/` | — | — | ⬜ Not started |
+| Integration | Target Package | ~DL/mo | Sentry Location | Upstream Issue | Upstream PR | Status |
+|---|---|---|---|---|---|---|
+| Hono | `hono` | ~161M | `packages/node/src/integrations/tracing/hono/` | [hono#4842](https://github.com/honojs/hono/issues/4842) | — | 💬 Issue opened |
+| Postgres.js | `postgres` | ~40M | `packages/node/src/integrations/tracing/postgresjs.ts` | [postgres#1171](https://github.com/porsager/postgres/issues/1171) | — | 💬 Issue opened |
+| TanStack Start | `@tanstack/react-start` | ~52M | `packages/tanstackstart-react/` | [TanStack/router#7604](https://github.com/TanStack/router/discussions/7604) (discussion) | — | 💬 Discussion open |
+| Firebase | `firebase-admin` | ~28M | `packages/node/src/integrations/tracing/firebase/` | — | — | ⬜ Not started |
 
 ### AI / ML Providers
 
-| Integration | Target Package | Sentry Location | Upstream Issue | Upstream PR | Status |
-|---|---|---|---|---|---|
-| OpenAI | `openai` | `packages/node/src/integrations/tracing/openai/` | [openai-node#1819](https://github.com/openai/openai-node/issues/1819) | — | 💬 Issue opened |
-| Anthropic AI | `@anthropic-ai/sdk` | `packages/node/src/integrations/tracing/anthropic-ai/` | [anthropic-sdk-typescript#1036](https://github.com/anthropics/anthropic-sdk-typescript/issues/1036) | — | 💬 Issue opened |
-| Google GenAI | `@google/genai` | `packages/node/src/integrations/tracing/google-genai/` | — | — | ⬜ Not started |
-| LangChain | `langchain` / `@langchain/*` | `packages/node/src/integrations/tracing/langchain/` | — | — | ⬜ Not started |
-| LangGraph | `@langchain/langgraph` | `packages/node/src/integrations/tracing/langgraph/` | — | — | ⬜ Not started |
-| Vercel AI (Node) | `ai` | `packages/node/src/integrations/tracing/vercelai/` | [ai#14410](https://github.com/vercel/ai/issues/14410) | [ai#15660](https://github.com/vercel/ai/pull/15660) (Vercel-driven) | 🟡 PR open |
-| Vercel AI (Cloudflare) | `ai` | `packages/cloudflare/src/integrations/tracing/vercelai.ts` | — | — | ⬜ Not started |
+| Integration | Target Package | ~DL/mo | Sentry Location | Upstream Issue | Upstream PR | Status |
+|---|---|---|---|---|---|---|
+| OpenAI | `openai` | ~95M | `packages/node/src/integrations/tracing/openai/` | [openai-node#1819](https://github.com/openai/openai-node/issues/1819) | — | 💬 Issue opened |
+| Anthropic AI | `@anthropic-ai/sdk` | ~86M | `packages/node/src/integrations/tracing/anthropic-ai/` | [anthropic-sdk-typescript#1036](https://github.com/anthropics/anthropic-sdk-typescript/issues/1036) | — | 💬 Issue opened |
+| Google GenAI | `@google/genai` | ~51M | `packages/node/src/integrations/tracing/google-genai/` | — | — | ⬜ Not started |
+| LangChain | `langchain` / `@langchain/*` | ~10M | `packages/node/src/integrations/tracing/langchain/` | — | — | ⬜ Not started |
+| LangGraph | `@langchain/langgraph` | ~10M | `packages/node/src/integrations/tracing/langgraph/` | — | — | ⬜ Not started |
+| Vercel AI (Node) | `ai` | ~58M | `packages/node/src/integrations/tracing/vercelai/` | [ai#14410](https://github.com/vercel/ai/issues/14410) | [ai#15660](https://github.com/vercel/ai/pull/15660) (Vercel-driven) | 🟡 PR open |
+| Vercel AI (Cloudflare) | `ai` | (same pkg) | `packages/cloudflare/src/integrations/tracing/vercelai.ts` | — | — | ⬜ Not started |
 
 ## Other TracingChannel PRs (not in Sentry tracker)
 
-| Library | Sentry Issue | Upstream PR | Status |
-|---|---|---|---|
-| h3 | — | [h3js/h3#1251](https://github.com/h3js/h3/pull/1251) | ✅ **Merged** (2025-12-30) |
-| h3 (rename) | — | [h3js/h3#1294](https://github.com/h3js/h3/pull/1294) | ✅ **Merged** (2026-02-05) |
-| srvx | — | [h3js/srvx#141](https://github.com/h3js/srvx/pull/141) | ✅ **Merged** (2025-12-11) |
-| srvx (rename) | — | [h3js/srvx#176](https://github.com/h3js/srvx/pull/176) | ✅ **Merged** (2026-02-05) |
-| unstorage | [sentry-javascript#18022](https://github.com/getsentry/sentry-javascript/issues/18022) | [unjs/unstorage#707](https://github.com/unjs/unstorage/pull/707) | ✅ **Merged** (2026-02-25) |
-| db0 | [sentry-javascript#18023](https://github.com/getsentry/sentry-javascript/issues/18023) | [unjs/db0#193](https://github.com/unjs/db0/pull/193) | 🟡 PR open |
-| Nitro | — | [nitrojs/nitro#4001](https://github.com/nitrojs/nitro/pull/4001) (pi0) | ✅ **Merged** (2026-04-13) |
-| Nuxt | — | [nuxt/nuxt#35191](https://github.com/nuxt/nuxt/pull/35191) (danielroe) | 🟡 PR open |
-| Elysia | — | [elysiajs/elysia#1809](https://github.com/elysiajs/elysia/issues/1809) | 💬 In discussion |
+| Library | ~DL/mo | Sentry Issue | Upstream PR | Status |
+|---|---|---|---|---|
+| h3 | ~88M | — | [h3js/h3#1251](https://github.com/h3js/h3/pull/1251) | ✅ **Merged** (2025-12-30) |
+| h3 (rename) | — | — | [h3js/h3#1294](https://github.com/h3js/h3/pull/1294) | ✅ **Merged** (2026-02-05) |
+| srvx | ~72M | — | [h3js/srvx#141](https://github.com/h3js/srvx/pull/141) | ✅ **Merged** (2025-12-11) |
+| srvx (rename) | — | — | [h3js/srvx#176](https://github.com/h3js/srvx/pull/176) | ✅ **Merged** (2026-02-05) |
+| unstorage | ~37M | [sentry-javascript#18022](https://github.com/getsentry/sentry-javascript/issues/18022) | [unjs/unstorage#707](https://github.com/unjs/unstorage/pull/707) | ✅ **Merged** (2026-02-25) |
+| db0 | ~16M | [sentry-javascript#18023](https://github.com/getsentry/sentry-javascript/issues/18023) | [unjs/db0#193](https://github.com/unjs/db0/pull/193) | 🟡 PR open |
+| Nitro | ~7M | — | [nitrojs/nitro#4001](https://github.com/nitrojs/nitro/pull/4001) (pi0) | ✅ **Merged** (2026-04-13) |
+| Nuxt | ~6M | — | [nuxt/nuxt#35191](https://github.com/nuxt/nuxt/pull/35191) (danielroe) | 🟡 PR open |
+| Elysia | ~2M | — | [elysiajs/elysia#1809](https://github.com/elysiajs/elysia/issues/1809) | 💬 In discussion |
 
 ## Logging Libraries
 
-| Library | Upstream PR | Channel Type | Status |
-|---|---|---|---|
-| pino | [pinojs/pino#2281](https://github.com/pinojs/pino/pull/2281) | TracingChannel (`traceSync`) | ✅ **Merged** (v9.10.0, 2025-09) |
-| consola | — | Plain `diagnostics_channel` | 📝 Proposal drafted |
+| Library | ~DL/mo | Upstream PR | Channel Type | Status |
+|---|---|---|---|---|
+| pino | ~142M | [pinojs/pino#2281](https://github.com/pinojs/pino/pull/2281) | TracingChannel (`traceSync`) | ✅ **Merged** (v9.10.0, 2025-09) |
+| consola | ~154M | — | Plain `diagnostics_channel` | 📝 Proposal drafted |
 
 ## Ecosystem Coordination
 
@@ -125,8 +164,8 @@ Core logic is ours — only OTel base classes need swapping.
 
 | Category | Total | ✅ Merged | 🟡 PR Open | 💬 In Discussion | ⬜ Not Started |
 |---|---|---|---|---|---|
-| OTel-provided | 24 | 6 (mysql2, fastify, redis, ioredis, graphql, mongoose) | 3 (express, pg, knex) | 3 (mongodb, tedious, prisma) | 11 + 1 📝 (koa) |
+| OTel-provided | 24 | 7 (mysql2, fastify, redis, ioredis, graphql, mongoose, undici) | 3 (express, pg, knex) | 3 (mongodb, tedious, prisma) | 10 + 1 📝 (koa) |
 | Sentry-built | 11 | 0 | 1 (vercel-ai) | 4 (hono, anthropic-ai, postgres.js, tanstack-start) | 6 |
 | Other (non-Sentry) | 9 | 6 | 2 (db0, nuxt) | 1 (elysia) | 0 |
 | Logging | 2 | 1 (pino) | 0 | 0 | 0 + 1 📝 (consola) |
-| **Total** | **46** | **13** | **6** | **9** | **18** |
+| **Total** | **46** | **14** | **6** | **9** | **17** |
