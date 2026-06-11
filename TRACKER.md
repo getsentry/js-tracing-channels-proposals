@@ -46,7 +46,7 @@ These currently rely on external monkey-patching infrastructure (IITM/RITM) and 
 
 | Integration | Target Package | Sentry Location | Upstream Issue | Upstream PR | Status |
 |---|---|---|---|---|---|
-| GraphQL | `graphql` | `packages/node/src/integrations/tracing/graphql.ts` | [graphql-js#4629](https://github.com/graphql/graphql-js/issues/4629) | [graphql-js#4670](https://github.com/graphql/graphql-js/pull/4670) | ✅ **Merged** (2026-06-02) |
+| GraphQL | `graphql` | `packages/node/src/integrations/tracing/graphql.ts` | [graphql-js#4629](https://github.com/graphql/graphql-js/issues/4629) | [graphql-js#4670](https://github.com/graphql/graphql-js/pull/4670) | ✅ **Merged & released** (v17.0.0-rc.0, 2026-06-02) |
 
 ### Message Queues
 
