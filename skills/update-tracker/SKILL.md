@@ -56,17 +56,24 @@ Recount all rows and update the Progress Summary table at the bottom of `TRACKER
 
 Count each row into exactly one bucket: Merged, PR Open, In Discussion, Not Started. "Proposal drafted" counts as "In Discussion". Libraries that ship the channel natively without our involvement (e.g. fastify, undici) count as Merged.
 
-### 6. Refresh the Ecosystem Reach section (optional — only if asked or numbers are stale)
+### 6. Refresh the Ecosystem Coverage section (monthly — download numbers drift)
 
-The `📊 Ecosystem Reach (rough)` section translates the checklist into download-weighted footprint. It is NOT auto-synced; only refresh when explicitly asked or when statuses changed materially.
+The `📊 Ecosystem Coverage` section is **generated** by `scripts/coverage.py`. Do not hand-edit the block between the `<!-- COVERAGE:START -->` / `<!-- COVERAGE:END -->` markers.
 
-- Pull rough monthly downloads with `curl -s https://api.npmjs.org/downloads/point/last-month/<pkg>` (scoped packages must be fetched individually; the API rate-limits bursts — space requests out or it returns `error code: 1015`). Round to the nearest million for the `~DL/mo` column.
-- **Preserve the caveats verbatim** — they are the point. The numbers are a footprint, NOT adoption:
-  - downloads ≠ apps (libraries are co-used, so sums double-count the same apps);
-  - version lag (channel only in newest release; download counts include all old versions, so a freshly-shipped or pre-release channel has ~0 real adoption — call these out by name, e.g. graphql v17-rc);
-  - transitive/CI pulls inflate counts.
-- **Attribution discipline.** "Sentry-driven" = a proposal authored in this repo (`proposals/`) that merged. Do NOT claim independent (`fastify`, `undici`, `pino`) or unjs/community (`h3`, `srvx`, `unstorage`, `nitro`) work as Sentry's. Note that independent work (chiefly undici, Node core) dominates the "exists upstream" bucket.
-- **Do not resurrect a single headline coverage-% (e.g. "90% covered").** It conflates footprint with adoption and is indefensible. Prefer the concrete "Sentry merged native tracing into libraries pulling ~XXXM downloads/mo, of which ~YYYM is in stable releases today" framing.
+```
+python3 scripts/coverage.py --write
+```
+
+This refetches weekly npm downloads, recomputes the adoption-aware coverage, and rewrites the block in place. Run it **once a month** (a scheduled agent does this — see below) and whenever a new channel merges.
+
+**When a new channel merges,** edit the data at the top of `scripts/coverage.py`:
+- Add the library to `COVERED` as `pkg: ("<introducing_version>", "sentry"|"other")`. Find the introducing version by checking the first stable release published after the merge date (`gh api repos/<o>/<r>/compare/<tag>...<sha>` → status `behind` means the tag contains the merge; or the PR milestone). For pre-release-only channels (e.g. graphql v17.0.0-rc.0) use the base version (`17.0.0`) — the script strips prereleases so the rc counts as capable.
+- Keep `ECOSYSTEM` in sync if a brand-new library is being tracked.
+
+**Methodology guardrails (don't regress these):**
+- Denominator = whole ecosystem, **all versions**; numerator = only **channel-capable versions** (real adoption, not "exists upstream"). This is why the script needs the per-version endpoint (`https://api.npmjs.org/versions/<pkg>/last-week`; only `last-week` works, not `last-month`).
+- **Attribution discipline.** `"sentry"` = a proposal authored in this repo (`proposals/`) that merged. Never tag independent (`fastify`, `undici`, `pino`) or unjs/community (`h3`, `srvx`, `unstorage`, `nitro`) as Sentry's.
+- **Report the diff (Sentry's effect) + the ceiling, never a single inflated coverage-%.** "Sentry merged native tracing into libraries representing ~X% of weekly downloads; ~Y points adopted today" is the defensible framing.
 
 ### 7. Report changes
 
