@@ -160,7 +160,7 @@ const clientData = allLibraries.map((l) => ({
               <button type="button" class="checkpoint" data-ev="publish">
                 <span class="cp-dot"></span>
                 <span class="cp-label">publish</span>
-                <span class="tip" role="tooltip"><code>channel.publish(msg)</code> fires once. No start, no end, no duration, no context propagation. Just a signal that an event occurred. Great for metrics, logs, analytics, and counters where you only need to record that something happened.</span>
+                <span class="tip" role="tooltip"><code>channel.publish(msg)</code> fires once. Great for metrics, logs, analytics, and counters. There's no built-in operation lifecycle (no start, end, or error), though you can still propagate async context yourself by binding a store with <code>channel.bindStore()</code> / <code>runStores()</code>.</span>
               </button>
             </div>
           </div>
@@ -182,6 +182,13 @@ const clientData = allLibraries.map((l) => ({
               ))}
             </div>
           </div>
+
+          <p class="diagram-note">
+            Same rails underneath: a <code>TracingChannel</code> is really plain channels plus
+            <code>AsyncLocalStorage</code> stores (<code>bindStore</code> / <code>runStores</code>),
+            bundled into a consistent start-to-finish lifecycle so every tool instruments the same
+            way. Plain channels hand you the pieces; <code>TracingChannel</code> assembles them.
+          </p>
         </div>
 
         <h3 class="learn-sub">Works across runtimes</h3>

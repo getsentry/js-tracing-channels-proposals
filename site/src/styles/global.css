@@ -360,6 +360,12 @@ h1 {
 .track-events .checkpoint:last-of-type:hover .tip,
 .track-events .checkpoint:last-of-type:focus-visible .tip { transform: translateX(0) translateY(0); }
 
+.diagram-note {
+  margin: 0; padding-top: 1.4rem; border-top: 1px solid var(--card-border);
+  color: var(--muted); font-size: 0.82rem; line-height: 1.65; text-align: center;
+}
+.diagram-note code { background: rgba(255, 255, 255, 0.06); padding: 0.06em 0.38em; border-radius: 5px; color: var(--text); white-space: nowrap; }
+
 .learn-sub { text-align: center; color: var(--muted); font-weight: 600; font-size: 0.95rem; margin: 2rem 0 1rem; }
 .runtimes { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.7rem; }
 .runtime {
