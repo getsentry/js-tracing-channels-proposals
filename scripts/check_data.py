@@ -86,6 +86,11 @@ def main():
 
         if lib.get("group") not in GROUPS:
             err(f"{pkg}: group '{lib.get('group')}' not in {sorted(GROUPS)}")
+
+        # Non-builtins must carry a numeric download count, else fmtDl() would
+        # mislabel them as "built-in" in the UI.
+        if not lib.get("builtin") and not isinstance(lib.get("downloadsPerMonth"), (int, float)):
+            err(f"{pkg}: non-builtin library must have a numeric downloadsPerMonth")
         for f in ("status", "diagnostics_channel", "tracing_channel"):
             if lib.get(f) not in STATUSES:
                 err(f"{pkg}: {f} '{lib.get(f)}' not in {sorted(STATUSES)}")

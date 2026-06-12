@@ -27,11 +27,11 @@ interface Lib {
   driver: 'sentry' | 'other' | null;
   notes: string;
   tier: 'AAA' | 'AA' | 'none';
-  verdict: 'yes' | 'soon' | 'no';
+  verdict: 'yes' | 'soon' | 'no' | 'no-go' | 'skipped';
 }
 
 interface IconMaps {
-  verdict: Record<'yes' | 'soon' | 'no' | 'unknown', string>;
+  verdict: Record<'yes' | 'soon' | 'no' | 'no-go' | 'skipped' | 'unknown', string>;
   status: Record<Status, string>;
   ui: Record<'pr' | 'issue' | 'npm' | 'suggest' | 'dices' | 'search' | 'polyfill' | 'book', string>;
 }
@@ -62,6 +62,8 @@ const VERDICT_TEXT = {
   yes: 'Yes!',
   soon: 'Not yet, but it’s in the works',
   no: 'Nope, not yet',
+  'no-go': 'Not viable',
+  skipped: 'Skipped',
 } as const;
 
 const $ = <T extends Element>(sel: string, root: ParentNode = document): T =>
@@ -126,7 +128,9 @@ interface NpmPkg {
 
 type Sugg = { kind: 'lib'; lib: Lib } | { kind: 'npm'; pkg: NpmPkg };
 
-const knownNames = new Set(LIBS.flatMap((l) => [norm(l.package), ...l.aliases.map(norm)]));
+const knownNames = new Set(
+  LIBS.flatMap((l) => [norm(l.package), norm(l.name), ...l.aliases.map(norm)]),
+);
 
 // scoped names need the slash encoded but the @ kept
 function npmPath(name: string): string {
@@ -192,8 +196,8 @@ function closeList() {
   active = -1;
 }
 
-function fmtDl(n: number | null): string {
-  if (n == null) return 'built-in';
+function fmtDl(n: number | null, builtin = false): string {
+  if (n == null) return builtin ? 'built-in' : '';
   if (n >= 1_000_000) return `~${Math.round(n / 1_000_000)}M/mo`;
   return `~${Math.round(n / 1000)}K/mo`;
 }
@@ -211,7 +215,7 @@ function renderList(items: Sugg[]) {
         ? `<li role="option" id="opt-${i}" aria-selected="false">
             <span class="opt-verdict v-${s.lib.verdict}">${ICONS.verdict[s.lib.verdict]}</span>
             <span class="opt-name"><b>${escapeHtml(s.lib.package)}</b><small>${escapeHtml(s.lib.name)}</small></span>
-            <span class="opt-meta">${s.lib.tier !== 'none' ? `<span class="opt-tier t-${s.lib.tier}">${s.lib.tier}</span>` : ''}${fmtDl(s.lib.downloadsPerMonth)}</span>
+            <span class="opt-meta">${s.lib.tier !== 'none' ? `<span class="opt-tier t-${s.lib.tier}">${s.lib.tier}</span>` : ''}${fmtDl(s.lib.downloadsPerMonth, s.lib.builtin)}</span>
           </li>`
         : `<li role="option" id="opt-${i}" aria-selected="false">
             <span class="opt-verdict v-unknown">${ICONS.verdict.unknown}</span>

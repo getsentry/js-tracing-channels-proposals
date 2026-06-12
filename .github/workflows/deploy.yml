@@ -35,6 +35,13 @@ jobs:
           node-version: 22
           cache: pnpm
           cache-dependency-path: site/pnpm-lock.yaml
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+      # Gate the deploy on data integrity — never publish invalid libraries.json.
+      - name: Validate tracker data
+        working-directory: ${{ github.workspace }}
+        run: python3 scripts/check_data.py
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
       - uses: actions/upload-pages-artifact@v3

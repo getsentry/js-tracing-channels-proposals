@@ -46,7 +46,7 @@ export interface Library extends RawLibrary {
   /** Highest capability level actually available today. */
   tier: Tier;
   /** The headline yes/no the site is built around. */
-  verdict: 'yes' | 'soon' | 'no';
+  verdict: 'yes' | 'soon' | 'no' | 'no-go' | 'skipped';
   /** True once a published version exists you can install. */
   available: boolean;
 }
@@ -67,6 +67,8 @@ function verdictOf(lib: RawLibrary): Library['verdict'] {
   if (AVAILABLE.includes(lib.diagnostics_channel) || AVAILABLE.includes(lib.tracing_channel))
     return 'yes';
   if (IN_FLIGHT.includes(lib.status)) return 'soon';
+  if (lib.status === 'no-go') return 'no-go';
+  if (lib.status === 'skipped') return 'skipped';
   return 'no';
 }
 

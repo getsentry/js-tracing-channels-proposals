@@ -159,6 +159,8 @@ h1 {
 .opt-verdict.v-yes { color: var(--yes); }
 .opt-verdict.v-soon { color: var(--soon); }
 .opt-verdict.v-no { color: var(--no); }
+.opt-verdict.v-no-go { color: var(--no); }
+.opt-verdict.v-skipped { color: var(--faint); }
 .opt-verdict.v-unknown { color: var(--faint); }
 .opt-npm {
   font-weight: 700; font-size: 0.66rem; letter-spacing: 0.02em;
@@ -197,6 +199,8 @@ h1 {
 .card[data-verdict="yes"] { --glow: rgba(52, 211, 153, 0.22); }
 .card[data-verdict="soon"] { --glow: rgba(251, 191, 36, 0.18); }
 .card[data-verdict="no"] { --glow: rgba(251, 113, 133, 0.16); }
+.card[data-verdict="no-go"] { --glow: rgba(251, 113, 133, 0.14); }
+.card[data-verdict="skipped"] { --glow: rgba(154, 160, 180, 0.12); }
 
 .card-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; position: relative; }
 .pkg { font-family: var(--mono); font-size: 1.55rem; margin: 0; word-break: break-all; }
@@ -223,6 +227,8 @@ h1 {
 .card[data-verdict="yes"] .verdict-text, .card[data-verdict="yes"] .verdict-emoji { color: var(--yes); }
 .card[data-verdict="soon"] .verdict-text, .card[data-verdict="soon"] .verdict-emoji { color: var(--soon); }
 .card[data-verdict="no"] .verdict-text, .card[data-verdict="no"] .verdict-emoji { color: var(--no); }
+.card[data-verdict="no-go"] .verdict-text, .card[data-verdict="no-go"] .verdict-emoji { color: var(--no); }
+.card[data-verdict="skipped"] .verdict-text, .card[data-verdict="skipped"] .verdict-emoji { color: var(--muted); }
 
 /* capability cards */
 .caps { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; margin: 1.4rem 0; }

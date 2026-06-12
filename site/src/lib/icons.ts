@@ -33,6 +33,8 @@ export const VERDICT_ICON = {
   yes: 'lucide:circle-check-big',
   soon: 'lucide:hammer',
   no: 'lucide:circle-slash-2',
+  'no-go': 'lucide:ban',
+  skipped: 'lucide:skip-forward',
   unknown: 'lucide:circle-help',
 } as const;
 
