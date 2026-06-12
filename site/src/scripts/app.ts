@@ -323,8 +323,12 @@ function showRow(node: HTMLElement, row: string, html: string) {
 // Only allow http(s) URLs and escape them — repo/homepage URLs come from the
 // npm registry, so a crafted value must not break out of the href attribute.
 function safeUrl(url: string): string {
+  // Require an explicit http(s):// URL — this rejects protocol-relative
+  // ("//host"), root-relative, and javascript:/data: values that an npm
+  // repository/homepage field could carry.
+  if (!/^https?:\/\//i.test(url.trim())) return '#';
   try {
-    const u = new URL(url, location.href);
+    const u = new URL(url);
     if (u.protocol === 'http:' || u.protocol === 'https:') return u.href;
   } catch {
     /* fall through */
@@ -359,7 +363,7 @@ function renderUnknown(q: string) {
       </p>
       <div class="links">
         ${linkBtn('https://github.com/getsentry/js-tracing-channels-proposals/issues/new', 'Suggest it', 'primary', ICONS.ui.suggest)}
-        ${linkBtn(`https://www.npmjs.com/package/${encodeURIComponent(q)}`, 'npm', 'ghost', ICONS.ui.npm)}
+        ${linkBtn(`https://www.npmjs.com/package/${q}`, 'npm', 'ghost', ICONS.ui.npm)}
       </div>
     </article>`;
 }
