@@ -102,8 +102,13 @@ function search(q: string, limit = 7): Lib[] {
 
 function findExact(q: string): Lib | undefined {
   const nq = norm(q);
-  return LIBS.find(
-    (l) => norm(l.package) === nq || norm(l.name) === nq || l.aliases.some((a) => norm(a) === nq),
+  // Priority: exact package, then exact display name, then alias — so e.g.
+  // "postgres" resolves to the `postgres` package, not `pg` (which aliases it),
+  // regardless of array order.
+  return (
+    LIBS.find((l) => norm(l.package) === nq) ??
+    LIBS.find((l) => norm(l.name) === nq) ??
+    LIBS.find((l) => l.aliases.some((a) => norm(a) === nq))
   );
 }
 
@@ -299,8 +304,20 @@ function showRow(node: HTMLElement, row: string, html: string) {
   $('dd', el).innerHTML = html;
 }
 
+// Only allow http(s) URLs and escape them — repo/homepage URLs come from the
+// npm registry, so a crafted value must not break out of the href attribute.
+function safeUrl(url: string): string {
+  try {
+    const u = new URL(url, location.href);
+    if (u.protocol === 'http:' || u.protocol === 'https:') return u.href;
+  } catch {
+    /* fall through */
+  }
+  return '#';
+}
+
 function linkBtn(url: string, label: string, kind: string, ico = ''): string {
-  return `<a class="btn ${kind}" href="${url}" target="_blank" rel="noopener">${ico}<span>${escapeHtml(label)}</span></a>`;
+  return `<a class="btn ${kind}" href="${escapeHtml(safeUrl(url))}" target="_blank" rel="noopener">${ico}<span>${escapeHtml(label)}</span></a>`;
 }
 
 // Clickable channel chips + a shared description line (wired by the delegated
@@ -409,8 +426,13 @@ async function submit() {
   renderLoading(q);
   const pkg = await npmPackage(q);
   if (norm(input.value) !== norm(q)) return; // query moved on
-  if (pkg) renderNpmCard(pkg);
-  else renderUnknown(q);
+  if (pkg) {
+    renderNpmCard(pkg);
+    setUrl(pkg.name);
+  } else {
+    renderUnknown(q);
+    setUrl(q);
+  }
 }
 
 // --- events ---------------------------------------------------------------
