@@ -15,6 +15,12 @@ export type Status =
 
 export type Tier = 'AAA' | 'AA' | 'none';
 
+export interface Channel {
+  name: string;
+  type: 'tracing' | 'diagnostics';
+  desc: string;
+}
+
 export interface RawLibrary {
   package: string;
   name: string;
@@ -28,7 +34,7 @@ export interface RawLibrary {
   diagnostics_channel: Status;
   tracing_channel: Status;
   shippedVersion: string | null;
-  channels: string[];
+  channels: Channel[];
   pr: { label: string; url: string } | null;
   issue: { label: string; url: string } | null;
   driver: 'sentry' | 'other' | null;

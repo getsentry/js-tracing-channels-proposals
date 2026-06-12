@@ -71,7 +71,10 @@
       "diagnostics_channel": "shipped",
       "tracing_channel": "shipped",
       "shippedVersion": "4.0.0",
-      "channels": ["tracing:fastify.request.handler"],
+      "channels": [
+        { "name": "fastify.request.handler", "type": "tracing", "desc": "Traces execution of a request's route handler." },
+        { "name": "fastify.initialization", "type": "diagnostics", "desc": "Fires once when a Fastify instance initializes, so instrumentation can wire itself up." }
+      ],
       "pr": null,
       "issue": null,
       "driver": "other",
@@ -185,7 +188,12 @@
       "diagnostics_channel": "shipped",
       "tracing_channel": "shipped",
       "shippedVersion": "3.20.0",
-      "channels": [],
+      "channels": [
+        { "name": "mysql2:query", "type": "tracing", "desc": "Traces a text query run via connection.query()." },
+        { "name": "mysql2:execute", "type": "tracing", "desc": "Traces a prepared-statement query run via connection.execute()." },
+        { "name": "mysql2:connect", "type": "tracing", "desc": "Traces a connection's initial handshake and connect." },
+        { "name": "mysql2:pool:connect", "type": "tracing", "desc": "Traces acquiring a connection from a pool." }
+      ],
       "pr": { "label": "node-mysql2#4178", "url": "https://github.com/sidorares/node-mysql2/pull/4178" },
       "issue": { "label": "node-mysql2#4174", "url": "https://github.com/sidorares/node-mysql2/issues/4174" },
       "driver": "sentry",
@@ -223,7 +231,14 @@
       "diagnostics_channel": "shipped",
       "tracing_channel": "shipped",
       "shippedVersion": "9.7.0",
-      "channels": [],
+      "channels": [
+        { "name": "mongoose:query", "type": "tracing", "desc": "Traces query execution (find, findOne, updates, and similar)." },
+        { "name": "mongoose:aggregate", "type": "tracing", "desc": "Traces aggregation pipeline execution." },
+        { "name": "mongoose:model:save", "type": "tracing", "desc": "Traces Model#save document persistence." },
+        { "name": "mongoose:model:insertMany", "type": "tracing", "desc": "Traces Model.insertMany bulk inserts." },
+        { "name": "mongoose:model:bulkWrite", "type": "tracing", "desc": "Traces Model.bulkWrite operations." },
+        { "name": "mongoose:cursor:next", "type": "tracing", "desc": "Traces fetching the next document from a cursor." }
+      ],
       "pr": { "label": "mongoose#16275", "url": "https://github.com/Automattic/mongoose/pull/16275" },
       "issue": { "label": "mongoose#16105", "url": "https://github.com/Automattic/mongoose/issues/16105" },
       "driver": "sentry",
@@ -242,7 +257,22 @@
       "diagnostics_channel": "shipped",
       "tracing_channel": "shipped",
       "shippedVersion": "5.12.0",
-      "channels": [],
+      "channels": [
+        { "name": "node-redis:command", "type": "tracing", "desc": "Traces the full lifecycle of a single Redis command." },
+        { "name": "node-redis:batch", "type": "tracing", "desc": "Traces a batched MULTI / pipeline operation." },
+        { "name": "node-redis:connect", "type": "tracing", "desc": "Traces establishing a client connection." },
+        { "name": "node-redis:connection:ready", "type": "diagnostics", "desc": "A connection became ready for use." },
+        { "name": "node-redis:connection:closed", "type": "diagnostics", "desc": "A connection was closed." },
+        { "name": "node-redis:connection:relaxed-timeout", "type": "diagnostics", "desc": "A connection's timeout was relaxed or restored." },
+        { "name": "node-redis:connection:handoff", "type": "diagnostics", "desc": "A connection handoff occurred." },
+        { "name": "node-redis:error", "type": "diagnostics", "desc": "A client error was raised." },
+        { "name": "node-redis:maintenance", "type": "diagnostics", "desc": "A server maintenance push notification arrived." },
+        { "name": "node-redis:pubsub", "type": "diagnostics", "desc": "An inbound or outbound pub/sub message." },
+        { "name": "node-redis:cache:request", "type": "diagnostics", "desc": "A client-side cache hit or miss." },
+        { "name": "node-redis:cache:eviction", "type": "diagnostics", "desc": "A client-side cache eviction." },
+        { "name": "node-redis:command:reply", "type": "diagnostics", "desc": "A command reply (used for pub/sub output and stream lag)." },
+        { "name": "node-redis:pool:connection-wait", "type": "diagnostics", "desc": "A task waiting for an available pooled connection." }
+      ],
       "pr": { "label": "node-redis#3195", "url": "https://github.com/redis/node-redis/pull/3195" },
       "issue": { "label": "node-redis#2590", "url": "https://github.com/redis/node-redis/issues/2590" },
       "driver": "sentry",
@@ -261,7 +291,11 @@
       "diagnostics_channel": "shipped",
       "tracing_channel": "shipped",
       "shippedVersion": "5.11.0",
-      "channels": [],
+      "channels": [
+        { "name": "ioredis:command", "type": "tracing", "desc": "Traces execution of an individual Redis command." },
+        { "name": "ioredis:batch", "type": "tracing", "desc": "Traces a batch / pipeline of multiple commands." },
+        { "name": "ioredis:connect", "type": "tracing", "desc": "Traces establishing a connection to Redis." }
+      ],
       "pr": { "label": "ioredis#2089", "url": "https://github.com/redis/ioredis/pull/2089" },
       "issue": null,
       "driver": "sentry",
@@ -338,7 +372,15 @@
       "diagnostics_channel": "shipped",
       "tracing_channel": "shipped",
       "shippedVersion": "17.0.0-rc.0",
-      "channels": [],
+      "channels": [
+        { "name": "graphql:parse", "type": "tracing", "desc": "Traces parsing a GraphQL source string into a document AST." },
+        { "name": "graphql:validate", "type": "tracing", "desc": "Traces validating a document against the schema." },
+        { "name": "graphql:execute", "type": "tracing", "desc": "Traces executing a full GraphQL operation." },
+        { "name": "graphql:execute:variableCoercion", "type": "tracing", "desc": "Traces coercing the operation's variable values." },
+        { "name": "graphql:execute:rootSelectionSet", "type": "tracing", "desc": "Traces executing the root selection set of the operation." },
+        { "name": "graphql:subscribe", "type": "tracing", "desc": "Traces setting up and running a subscription operation." },
+        { "name": "graphql:resolve", "type": "tracing", "desc": "Traces resolving an individual field via its resolver." }
+      ],
       "pr": { "label": "graphql-js#4670", "url": "https://github.com/graphql/graphql-js/pull/4670" },
       "issue": { "label": "graphql-js#4629", "url": "https://github.com/graphql/graphql-js/issues/4629" },
       "driver": "sentry",
@@ -471,7 +513,17 @@
       "diagnostics_channel": "shipped",
       "tracing_channel": "shipped",
       "shippedVersion": "4.7.0",
-      "channels": ["undici:request"],
+      "channels": [
+        { "name": "undici:request:create", "type": "diagnostics", "desc": "A new request was created and is about to be dispatched." },
+        { "name": "undici:request:bodySent", "type": "diagnostics", "desc": "The request body finished sending." },
+        { "name": "undici:request:headers", "type": "diagnostics", "desc": "Response headers and status were received." },
+        { "name": "undici:request:trailers", "type": "diagnostics", "desc": "The request completed and trailers were received." },
+        { "name": "undici:request:error", "type": "diagnostics", "desc": "The request errored." },
+        { "name": "undici:client:beforeConnect", "type": "diagnostics", "desc": "A new socket connection is about to be established." },
+        { "name": "undici:client:connected", "type": "diagnostics", "desc": "A socket connection was established." },
+        { "name": "undici:client:connectError", "type": "diagnostics", "desc": "Establishing a socket connection failed." },
+        { "name": "undici:client:sendHeaders", "type": "diagnostics", "desc": "Request headers are being written to the socket." }
+      ],
       "pr": null,
       "issue": null,
       "driver": "other",
@@ -680,7 +732,9 @@
       "diagnostics_channel": "shipped",
       "tracing_channel": "shipped",
       "shippedVersion": "2.0.0",
-      "channels": [],
+      "channels": [
+        { "name": "h3.request", "type": "tracing", "desc": "Traces handling of an incoming request through the h3 app." }
+      ],
       "pr": { "label": "h3js/h3#1251", "url": "https://github.com/h3js/h3/pull/1251" },
       "issue": null,
       "driver": "other",
@@ -699,7 +753,10 @@
       "diagnostics_channel": "shipped",
       "tracing_channel": "shipped",
       "shippedVersion": "0.0.0",
-      "channels": [],
+      "channels": [
+        { "name": "srvx.request", "type": "tracing", "desc": "Traces handling of an HTTP request through the srvx server." },
+        { "name": "srvx.middleware", "type": "tracing", "desc": "Traces execution of a srvx middleware." }
+      ],
       "pr": { "label": "h3js/srvx#141", "url": "https://github.com/h3js/srvx/pull/141" },
       "issue": null,
       "driver": "other",
@@ -718,7 +775,13 @@
       "diagnostics_channel": "shipped",
       "tracing_channel": "shipped",
       "shippedVersion": "1.16.0",
-      "channels": [],
+      "channels": [
+        { "name": "unstorage.getItem", "type": "tracing", "desc": "Traces reading a stored item by key." },
+        { "name": "unstorage.setItem", "type": "tracing", "desc": "Traces writing an item by key." },
+        { "name": "unstorage.removeItem", "type": "tracing", "desc": "Traces deleting an item by key." },
+        { "name": "unstorage.getKeys", "type": "tracing", "desc": "Traces listing keys under a base or prefix." },
+        { "name": "unstorage.clear", "type": "tracing", "desc": "Traces clearing all items under a base or prefix." }
+      ],
       "pr": { "label": "unjs/unstorage#707", "url": "https://github.com/unjs/unstorage/pull/707" },
       "issue": { "label": "sentry-javascript#18022", "url": "https://github.com/getsentry/sentry-javascript/issues/18022" },
       "driver": "other",
@@ -756,7 +819,10 @@
       "diagnostics_channel": "shipped",
       "tracing_channel": "shipped",
       "shippedVersion": "2.12.0",
-      "channels": [],
+      "channels": [
+        { "name": "srvx.request", "type": "tracing", "desc": "Traces request handling, surfaced via the bundled srvx server." },
+        { "name": "h3.request", "type": "tracing", "desc": "Traces request handling, surfaced via the bundled h3 app." }
+      ],
       "pr": { "label": "nitrojs/nitro#4001", "url": "https://github.com/nitrojs/nitro/pull/4001" },
       "issue": null,
       "driver": "other",
@@ -813,7 +879,9 @@
       "diagnostics_channel": "shipped",
       "tracing_channel": "shipped",
       "shippedVersion": "9.10.0",
-      "channels": [],
+      "channels": [
+        { "name": "pino_asJson", "type": "tracing", "desc": "Traces serializing a log record into its newline-delimited JSON line." }
+      ],
       "pr": { "label": "pinojs/pino#2281", "url": "https://github.com/pinojs/pino/pull/2281" },
       "issue": null,
       "driver": "other",

@@ -252,6 +252,23 @@ h1 {
 .meta-row dd code { background: rgba(255, 255, 255, 0.06); padding: 0.12em 0.45em; border-radius: 6px; margin-right: 0.3rem; display: inline-block; }
 .meta-row dd em { color: var(--soon); font-style: normal; }
 
+/* clickable channel chips */
+.chan-list { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+.chan-chip {
+  font-family: var(--mono); font-size: 0.78rem; cursor: pointer; color: var(--text);
+  padding: 0.24rem 0.5rem; border-radius: 7px;
+  border: 1px solid var(--card-border); background: rgba(255, 255, 255, 0.03);
+  transition: border-color 0.15s, background 0.15s, transform 0.1s;
+}
+.chan-chip:hover { transform: translateY(-1px); }
+.chan-chip.tc { border-color: rgba(255, 214, 107, 0.35); }
+.chan-chip.dc { border-color: rgba(199, 206, 217, 0.3); }
+.chan-chip.active { background: rgba(124, 92, 255, 0.18); border-color: var(--accent); }
+.chan-desc { margin: 0.75rem 0 0; color: var(--muted); font-size: 0.85rem; line-height: 1.55; }
+.chan-desc-name { display: block; margin-bottom: 0.25rem; }
+.chan-desc-name code { background: rgba(255, 255, 255, 0.06); padding: 0.06em 0.4em; border-radius: 5px; color: var(--text); }
+.chan-desc-name em { font-style: normal; font-size: 0.66rem; color: var(--faint); text-transform: uppercase; letter-spacing: 0.05em; margin-left: 0.45rem; }
+
 /* links */
 .links { display: flex; flex-wrap: wrap; gap: 0.6rem; margin-top: 1.3rem; }
 .btn {

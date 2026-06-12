@@ -6,6 +6,7 @@ type Status =
   | 'proposed' | 'not-started' | 'no-go' | 'skipped' | 'none';
 
 interface Link { label: string; url: string }
+interface Channel { name: string; type: 'tracing' | 'diagnostics'; desc: string }
 
 interface Lib {
   package: string;
@@ -20,7 +21,7 @@ interface Lib {
   diagnostics_channel: Status;
   tracing_channel: Status;
   shippedVersion: string | null;
-  channels: string[];
+  channels: Channel[];
   pr: Link | null;
   issue: Link | null;
   driver: 'sentry' | 'other' | null;
@@ -266,8 +267,7 @@ function renderCard(lib: Lib) {
   if (lib.shippedVersion) showRow(node, 'version', escapeHtml(lib.shippedVersion) + (lib.prerelease ? ' <em>(pre-release)</em>' : ''));
   if (lib.downloadsPerMonth != null) showRow(node, 'dl', fmtDl(lib.downloadsPerMonth));
   if (lib.builtin && lib.downloadsPerMonth == null) showRow(node, 'dl', 'ships with Node');
-  if (lib.channels.length)
-    showRow(node, 'channels', lib.channels.map((c) => `<code>${escapeHtml(c)}</code>`).join(' '));
+  if (lib.channels.length) showRow(node, 'channels', renderChannels(lib.channels));
   if (lib.notes) showRow(node, 'notes', escapeHtml(lib.notes));
 
   // links
@@ -301,6 +301,18 @@ function showRow(node: HTMLElement, row: string, html: string) {
 
 function linkBtn(url: string, label: string, kind: string, ico = ''): string {
   return `<a class="btn ${kind}" href="${url}" target="_blank" rel="noopener">${ico}<span>${escapeHtml(label)}</span></a>`;
+}
+
+// Clickable channel chips + a shared description line (wired by the delegated
+// handler on #result below).
+function renderChannels(chans: Channel[]): string {
+  const chips = chans
+    .map(
+      (c) =>
+        `<button type="button" class="chan-chip ${c.type === 'tracing' ? 'tc' : 'dc'}" data-desc="${escapeHtml(c.desc)}">${escapeHtml(c.name)}</button>`,
+    )
+    .join('');
+  return `<div class="chan-list">${chips}</div><p class="chan-desc" hidden></p>`;
 }
 
 function renderUnknown(q: string) {
@@ -466,6 +478,25 @@ input.addEventListener('focus', () => {
 
 document.addEventListener('click', (e) => {
   if (!(e.target as HTMLElement).closest('.combo, #suggestions')) closeList();
+});
+
+// channel chips: click to reveal what each channel does
+result.addEventListener('click', (e) => {
+  const chip = (e.target as HTMLElement).closest('.chan-chip') as HTMLElement | null;
+  if (!chip) return;
+  const wrap = chip.closest('.chan-list');
+  const desc = wrap?.parentElement?.querySelector('.chan-desc') as HTMLElement | null;
+  if (!wrap || !desc) return;
+  const wasActive = chip.classList.contains('active');
+  wrap.querySelectorAll('.chan-chip').forEach((c) => c.classList.remove('active'));
+  if (wasActive) {
+    desc.hidden = true;
+    return;
+  }
+  chip.classList.add('active');
+  const kind = chip.classList.contains('tc') ? 'tracing channel' : 'diagnostics_channel';
+  desc.innerHTML = `<span class="chan-desc-name"><code>${escapeHtml(chip.textContent || '')}</code><em>${kind}</em></span>${escapeHtml(chip.dataset.desc || '')}`;
+  desc.hidden = false;
 });
 
 lucky.addEventListener('click', () => {

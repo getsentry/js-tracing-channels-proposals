@@ -87,7 +87,7 @@ For each library object, keep these fields current:
 - `shippedVersion` — the introducing version once shipped (mirror `scripts/coverage.py`'s `COVERED` map). Set `"prerelease": true` for rc/beta-only channels (e.g. graphql `17.0.0-rc.0`).
 - `pr` / `issue` — `{ "label", "url" }` matching the tracker links; `null` if none.
 - `driver` — `"sentry"` (proposal authored in this repo) or `"other"` (independent/community); `null` if not started.
-- `channels` — known channel names if documented (e.g. `["tracing:fastify.request.handler"]`).
+- `channels` — for **shipped/merged** libraries only, the channel names the library actually publishes, each as `{ "name", "type", "desc" }` where `type` is `"tracing"` (a TracingChannel) or `"diagnostics"` (a plain channel) and `desc` is a one-sentence plain-English explanation of what that channel traces (no field/context-object docs). **Source these verbatim from the merged upstream PR / released source, not the proposal** (proposals drift; the PR is the source of truth) — verify with `gh pr diff <url>`. Leave `[]` for libraries that haven't shipped/merged. These power the clickable channel chips on the site card.
 - `notes` — short free-text matching the tracker's status note.
 
 When **adding a brand-new library**, add a full object (copy the shape of an existing entry) and bump `meta.updated`. Also update `meta.updated` to today's date on any change. The site rebuilds and redeploys automatically on push (`.github/workflows/deploy.yml`) — no manual deploy step.
