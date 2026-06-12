@@ -158,6 +158,12 @@ h1 {
 .opt-verdict.v-yes { color: var(--yes); }
 .opt-verdict.v-soon { color: var(--soon); }
 .opt-verdict.v-no { color: var(--no); }
+.opt-verdict.v-unknown { color: var(--faint); }
+.opt-npm {
+  font-weight: 700; font-size: 0.66rem; letter-spacing: 0.02em;
+  padding: 0.12rem 0.42rem; border-radius: 6px;
+  background: rgba(203, 56, 55, 0.16); color: #ff8e8d; white-space: nowrap;
+}
 .opt-name { display: flex; flex-direction: column; line-height: 1.25; flex: 1; min-width: 0; }
 .opt-name b { font-family: var(--mono); font-size: 0.95rem; }
 .opt-name small { color: var(--muted); font-size: 0.78rem; }
@@ -263,8 +269,13 @@ h1 {
 /* unknown */
 .card.unknown { text-align: center; }
 .card.unknown .verdict { justify-content: center; }
-.unknown-body { color: var(--muted); line-height: 1.6; max-width: 44ch; margin: 0.8rem auto 0; }
+.unknown-body { color: var(--muted); line-height: 1.6; max-width: 46ch; margin: 0.8rem auto 0; }
 .card.unknown .links { justify-content: center; }
+.npm-title { font-family: var(--mono); font-size: 1.4rem; margin: 0; word-break: break-all; }
+.card.unknown .pkg-name { margin: 0.25rem 0 0; }
+.npm-dl { margin: 0.7rem auto 0; color: var(--faint); font-size: 0.82rem; }
+.verdict-text.loading { color: var(--muted); font-size: 1.05rem; font-weight: 600; }
+.verdict-text.loading code { background: rgba(255, 255, 255, 0.06); padding: 0.08em 0.4em; border-radius: 5px; }
 
 /* learn-more section ------------------------------------------------------ */
 .learn { margin-top: 4rem; }

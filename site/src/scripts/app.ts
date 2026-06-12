@@ -106,10 +106,78 @@ function findExact(q: string): Lib | undefined {
   );
 }
 
+// --- npm registry (for packages we don't track) ---------------------------
+// The registry search/metadata endpoints are CORS-enabled, so we can query
+// them straight from the static page. npm can't tell us about channel support,
+// so npm-only results are always shown as "not tracked".
+
+interface NpmPkg {
+  name: string;
+  version: string;
+  description: string;
+  links: { repository?: string; homepage?: string; npm?: string };
+}
+
+type Sugg = { kind: 'lib'; lib: Lib } | { kind: 'npm'; pkg: NpmPkg };
+
+const knownNames = new Set(LIBS.flatMap((l) => [norm(l.package), ...l.aliases.map(norm)]));
+
+// scoped names need the slash encoded but the @ kept
+function npmPath(name: string): string {
+  return name.startsWith('@') ? name.replace('/', '%2F') : encodeURIComponent(name);
+}
+
+function cleanRepoUrl(u?: string): string | undefined {
+  if (!u) return undefined;
+  return u.replace(/^git\+/, '').replace(/^git:\/\//, 'https://').replace(/\.git$/, '');
+}
+
+async function npmSearch(q: string): Promise<NpmPkg[]> {
+  try {
+    const r = await fetch(`https://registry.npmjs.org/-/v1/search?text=${encodeURIComponent(q)}&size=10`);
+    if (!r.ok) return [];
+    const data = await r.json();
+    return (data.objects ?? []).map((o: any) => o.package as NpmPkg);
+  } catch {
+    return [];
+  }
+}
+
+async function npmPackage(name: string): Promise<NpmPkg | null> {
+  try {
+    const r = await fetch(`https://registry.npmjs.org/${npmPath(name)}/latest`);
+    if (!r.ok) return null;
+    const m = await r.json();
+    return {
+      name: m.name,
+      version: m.version,
+      description: m.description ?? '',
+      links: {
+        npm: `https://www.npmjs.com/package/${m.name}`,
+        homepage: m.homepage,
+        repository: typeof m.repository === 'string' ? m.repository : m.repository?.url,
+      },
+    };
+  } catch {
+    return null;
+  }
+}
+
+async function npmMonthlyDownloads(name: string): Promise<number | null> {
+  try {
+    const r = await fetch(`https://api.npmjs.org/downloads/point/last-week/${npmPath(name)}`);
+    if (!r.ok) return null;
+    const d = await r.json();
+    return d.downloads ? Math.round(d.downloads * 4.345) : null; // weekly → ~monthly
+  } catch {
+    return null;
+  }
+}
+
 // --- autocomplete UI ------------------------------------------------------
 
 let active = -1;
-let current: Lib[] = [];
+let current: Sugg[] = [];
 
 function closeList() {
   list.hidden = true;
@@ -124,7 +192,7 @@ function fmtDl(n: number | null): string {
   return `~${Math.round(n / 1000)}K/mo`;
 }
 
-function renderList(items: Lib[]) {
+function renderList(items: Sugg[]) {
   current = items;
   active = -1;
   if (!items.length) {
@@ -132,13 +200,18 @@ function renderList(items: Lib[]) {
     return;
   }
   list.innerHTML = items
-    .map(
-      (l, i) => `
-      <li role="option" id="opt-${i}" data-pkg="${l.package}" aria-selected="false">
-        <span class="opt-verdict v-${l.verdict}">${ICONS.verdict[l.verdict]}</span>
-        <span class="opt-name"><b>${escapeHtml(l.package)}</b><small>${escapeHtml(l.name)}</small></span>
-        <span class="opt-meta">${l.tier !== 'none' ? `<span class="opt-tier t-${l.tier}">${l.tier}</span>` : ''}${fmtDl(l.downloadsPerMonth)}</span>
-      </li>`,
+    .map((s, i) =>
+      s.kind === 'lib'
+        ? `<li role="option" id="opt-${i}" aria-selected="false">
+            <span class="opt-verdict v-${s.lib.verdict}">${ICONS.verdict[s.lib.verdict]}</span>
+            <span class="opt-name"><b>${escapeHtml(s.lib.package)}</b><small>${escapeHtml(s.lib.name)}</small></span>
+            <span class="opt-meta">${s.lib.tier !== 'none' ? `<span class="opt-tier t-${s.lib.tier}">${s.lib.tier}</span>` : ''}${fmtDl(s.lib.downloadsPerMonth)}</span>
+          </li>`
+        : `<li role="option" id="opt-${i}" aria-selected="false">
+            <span class="opt-verdict v-unknown">${ICONS.verdict.unknown}</span>
+            <span class="opt-name"><b>${escapeHtml(s.pkg.name)}</b><small>${escapeHtml(s.pkg.description || 'npm package')}</small></span>
+            <span class="opt-meta"><span class="opt-npm">npm · untracked</span></span>
+          </li>`,
     )
     .join('');
   list.hidden = false;
@@ -246,37 +319,117 @@ function renderUnknown(q: string) {
     </article>`;
 }
 
+function renderLoading(q: string) {
+  result.innerHTML = `
+    <article class="card unknown in">
+      <div class="verdict"><span class="verdict-text loading">Looking up <code>${escapeHtml(q)}</code> on npm…</span></div>
+    </article>`;
+}
+
+function renderNpmCard(pkg: NpmPkg) {
+  const repo = cleanRepoUrl(pkg.links.repository || pkg.links.homepage);
+  result.innerHTML = `
+    <article class="card unknown in">
+      <h2 class="pkg npm-title">${escapeHtml(pkg.name)}</h2>
+      <p class="pkg-name">v${escapeHtml(pkg.version)} · npm package</p>
+      <div class="verdict"><span class="verdict-emoji">${ICONS.verdict.unknown}</span>
+        <span class="verdict-text">Not in our tracker</span></div>
+      <p class="unknown-body">
+        ${pkg.description ? escapeHtml(pkg.description) + ' ' : ''}We haven't checked this one for
+        native <code>diagnostics_channel</code> / <code>TracingChannel</code> support; it isn't in
+        the tracker. If you think it should be, let us know.
+      </p>
+      <p class="npm-dl" hidden></p>
+      <div class="links">
+        ${linkBtn('https://github.com/getsentry/js-tracing-channels-proposals/issues/new', 'Suggest it', 'ghost pr', ICONS.ui.suggest)}
+        ${repo ? linkBtn(repo, 'Repo', 'ghost', ICONS.ui.pr) : ''}
+        ${linkBtn(pkg.links.npm || `https://www.npmjs.com/package/${pkg.name}`, 'npm', 'ghost', ICONS.ui.npm)}
+      </div>
+    </article>`;
+  npmMonthlyDownloads(pkg.name).then((m) => {
+    if (m == null || norm(input.value) !== norm(pkg.name)) return;
+    const el = result.querySelector('.npm-dl') as HTMLElement | null;
+    if (el) {
+      el.textContent = `${fmtDl(m)} on npm`;
+      el.hidden = false;
+    }
+  });
+}
+
 // --- selection / routing --------------------------------------------------
+
+function setUrl(q: string) {
+  const url = new URL(location.href);
+  url.searchParams.set('q', q);
+  history.replaceState(null, '', url);
+}
+
+function selectSugg(s: Sugg) {
+  if (s.kind === 'lib') select(s.lib);
+  else selectNpm(s.pkg);
+}
 
 function select(lib: Lib, pushUrl = true) {
   input.value = lib.package;
   closeList();
   renderCard(lib);
-  if (pushUrl) {
-    const url = new URL(location.href);
-    url.searchParams.set('q', lib.package);
-    history.replaceState(null, '', url);
-  }
+  if (pushUrl) setUrl(lib.package);
   input.blur();
 }
 
-function submit() {
+function selectNpm(pkg: NpmPkg) {
+  input.value = pkg.name;
+  closeList();
+  renderNpmCard(pkg);
+  setUrl(pkg.name);
+  input.blur();
+}
+
+async function submit() {
   const q = input.value.trim();
   if (!q) return;
   const exact = findExact(q);
   if (exact) return select(exact);
   const hits = search(q, 1);
   if (hits.length) return select(hits[0]);
+  // not tracked → resolve against npm
   closeList();
-  renderUnknown(q);
+  renderLoading(q);
+  const pkg = await npmPackage(q);
+  if (norm(input.value) !== norm(q)) return; // query moved on
+  if (pkg) renderNpmCard(pkg);
+  else renderUnknown(q);
 }
 
 // --- events ---------------------------------------------------------------
 
+// Local results render instantly; if they're thin we augment with npm hits.
+let seq = 0;
+async function update() {
+  const q = input.value.trim();
+  const mine = ++seq;
+  if (!q) {
+    closeList();
+    return;
+  }
+  const local: Sugg[] = search(q).map((lib) => ({ kind: 'lib', lib }));
+  renderList(local);
+  if (q.length >= 2 && local.length < 6) {
+    const npm = await npmSearch(q);
+    if (mine !== seq) return; // a newer keystroke won
+    const localNames = new Set(local.map((s) => (s.kind === 'lib' ? norm(s.lib.package) : '')));
+    const extras: Sugg[] = npm
+      .filter((p) => !knownNames.has(norm(p.name)) && !localNames.has(norm(p.name)))
+      .slice(0, 6)
+      .map((pkg) => ({ kind: 'npm', pkg }));
+    if (extras.length) renderList(local.concat(extras));
+  }
+}
+
 let t: number | undefined;
 input.addEventListener('input', () => {
   window.clearTimeout(t);
-  t = window.setTimeout(() => renderList(search(input.value.trim())), 60);
+  t = window.setTimeout(update, 120);
 });
 
 input.addEventListener('keydown', (e) => {
@@ -292,7 +445,7 @@ input.addEventListener('keydown', (e) => {
     setActive((active - 1 + current.length) % current.length);
   } else if (e.key === 'Enter') {
     e.preventDefault();
-    if (active >= 0 && current[active]) select(current[active]);
+    if (active >= 0 && current[active]) selectSugg(current[active]);
     else submit();
   } else if (e.key === 'Escape') {
     closeList();
@@ -303,12 +456,12 @@ list.addEventListener('mousedown', (e) => {
   // mousedown (not click) so it fires before input blur
   const li = (e.target as HTMLElement).closest('li');
   if (!li) return;
-  const lib = LIBS.find((l) => l.package === li.dataset.pkg);
-  if (lib) select(lib);
+  const idx = Array.from(list.children).indexOf(li);
+  if (idx >= 0 && current[idx]) selectSugg(current[idx]);
 });
 
 input.addEventListener('focus', () => {
-  if (input.value.trim()) renderList(search(input.value.trim()));
+  if (input.value.trim()) update();
 });
 
 document.addEventListener('click', (e) => {
@@ -331,6 +484,11 @@ if (initial) {
     renderCard(lib);
   } else {
     input.value = initial;
-    renderUnknown(initial);
+    renderLoading(initial);
+    npmPackage(initial).then((pkg) => {
+      if (norm(input.value) !== norm(initial)) return;
+      if (pkg) renderNpmCard(pkg);
+      else renderUnknown(initial);
+    });
   }
 }
