@@ -95,7 +95,7 @@ These currently rely on external monkey-patching infrastructure (IITM/RITM) and 
 
 | Integration | Target Package | ~DL/mo | Sentry Location | Upstream Issue | Upstream PR | Status |
 |---|---|---|---|---|---|---|
-| DataLoader | `dataloader` | ~52M | `packages/node/src/integrations/tracing/dataloader.ts` | — | — | ⬜ Not started |
+| DataLoader | `dataloader` | ~52M | `packages/node/src/integrations/tracing/dataloader.ts` | [dataloader#393](https://github.com/graphql/dataloader/issues/393) | — | 💬 Issue opened |
 | Generic Pool | `generic-pool` | ~42M | `packages/node/src/integrations/tracing/genericPool.ts` | — | — | ⬜ Not started |
 | LRU Memoizer | `lru-memoizer` | ~50M | `packages/node/src/integrations/tracing/lrumemoizer.ts` | — | — | ⏭️ Skipped — thin wrapper over `lru-cache`, covered by lru-cache TracingChannel work |
 
@@ -161,8 +161,8 @@ Core logic is ours — only OTel base classes need swapping.
 
 | Category | Total | ✅ Merged | 🟡 PR Open | 💬 In Discussion | ⬜ Not Started |
 |---|---|---|---|---|---|
-| OTel-provided | 24 | 7 (mysql2, fastify, redis, ioredis, graphql, mongoose, undici) | 3 (express, pg, knex) | 3 (mongodb, tedious, prisma) | 10 + 1 📝 (koa) |
+| OTel-provided | 24 | 7 (mysql2, fastify, redis, ioredis, graphql, mongoose, undici) | 3 (express, pg, knex) | 4 (mongodb, tedious, prisma, dataloader) | 9 + 1 📝 (koa) |
 | Sentry-built | 11 | 0 | 1 (vercel-ai) | 4 (hono, anthropic-ai, postgres.js, tanstack-start) | 6 |
 | Other (non-Sentry) | 9 | 6 | 2 (db0, nuxt) | 1 (elysia) | 0 |
 | Logging | 2 | 1 (pino) | 0 | 0 | 0 + 1 📝 (consola) |
-| **Total** | **46** | **14** | **6** | **9** | **17** |
+| **Total** | **46** | **14** | **6** | **10** | **15** |
