@@ -144,7 +144,10 @@ function cleanRepoUrl(u?: string): string | undefined {
 
 async function npmSearch(q: string): Promise<NpmPkg[]> {
   try {
-    const r = await fetch(`https://registry.npmjs.org/-/v1/search?text=${encodeURIComponent(q)}&size=10`);
+    const r = await fetch(
+      `https://registry.npmjs.org/-/v1/search?text=${encodeURIComponent(q)}&size=10`,
+      { signal: AbortSignal.timeout(6000) },
+    );
     if (!r.ok) return [];
     const data = await r.json();
     return (data.objects ?? []).map((o: any) => o.package as NpmPkg);
@@ -155,7 +158,9 @@ async function npmSearch(q: string): Promise<NpmPkg[]> {
 
 async function npmPackage(name: string): Promise<NpmPkg | null> {
   try {
-    const r = await fetch(`https://registry.npmjs.org/${npmPath(name)}/latest`);
+    const r = await fetch(`https://registry.npmjs.org/${npmPath(name)}/latest`, {
+      signal: AbortSignal.timeout(6000),
+    });
     if (!r.ok) return null;
     const m = await r.json();
     const pkgName = m.name ?? name;
@@ -176,7 +181,9 @@ async function npmPackage(name: string): Promise<NpmPkg | null> {
 
 async function npmMonthlyDownloads(name: string): Promise<number | null> {
   try {
-    const r = await fetch(`https://api.npmjs.org/downloads/point/last-week/${npmPath(name)}`);
+    const r = await fetch(`https://api.npmjs.org/downloads/point/last-week/${npmPath(name)}`, {
+      signal: AbortSignal.timeout(6000),
+    });
     if (!r.ok) return null;
     const d = await r.json();
     return d.downloads ? Math.round(d.downloads * 4.345) : null; // weekly → ~monthly
@@ -194,6 +201,7 @@ function closeList() {
   list.hidden = true;
   list.innerHTML = '';
   input.setAttribute('aria-expanded', 'false');
+  input.removeAttribute('aria-activedescendant');
   active = -1;
 }
 
@@ -233,7 +241,10 @@ function setActive(i: number) {
   const opts = Array.from(list.children) as HTMLElement[];
   opts.forEach((o, idx) => o.setAttribute('aria-selected', String(idx === i)));
   active = i;
-  if (opts[i]) opts[i].scrollIntoView({ block: 'nearest' });
+  if (opts[i]) {
+    input.setAttribute('aria-activedescendant', opts[i].id);
+    opts[i].scrollIntoView({ block: 'nearest' });
+  }
 }
 
 // --- card rendering -------------------------------------------------------
@@ -461,7 +472,8 @@ async function update() {
       .filter((p) => !knownNames.has(norm(p.name)) && !localNames.has(norm(p.name)))
       .slice(0, 6)
       .map((pkg) => ({ kind: 'npm', pkg }));
-    if (extras.length) renderList(local.concat(extras));
+    // Don't clobber the list if the user has already started arrow-keying.
+    if (extras.length && active < 0) renderList(local.concat(extras));
   }
 }
 
