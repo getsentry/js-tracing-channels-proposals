@@ -1,0 +1,39 @@
+name: Data integrity
+
+on:
+  pull_request:
+    paths:
+      - 'data/**'
+      - 'TRACKER.md'
+      - 'scripts/check_data.py'
+      - '.github/workflows/data-check.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'data/**'
+      - 'TRACKER.md'
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      # Hard gate: libraries.json must be valid and complete.
+      - run: python3 scripts/check_data.py
+
+      # Soft reminder: a tracker status change should be mirrored in the JSON.
+      # (Coverage-only refreshes / pure prose edits can ignore this.)
+      - name: Remind to keep TRACKER.md and data/libraries.json in sync
+        if: github.event_name == 'pull_request'
+        run: |
+          base="origin/${{ github.base_ref }}"
+          changed="$(git diff --name-only "$base"...HEAD)"
+          if echo "$changed" | grep -q '^TRACKER.md$' && ! echo "$changed" | grep -q '^data/libraries.json$'; then
+            echo "::warning title=Data may be out of sync::TRACKER.md changed but data/libraries.json did not. If this PR changes a library's status/PR/channels, update data/libraries.json too (see skills/update-tracker). Coverage-only or prose edits can ignore this."
+          fi

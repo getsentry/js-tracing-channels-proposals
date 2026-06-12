@@ -2,6 +2,13 @@
 
 Update `TRACKER.md` with the current progress of all TracingChannel proposals and PRs.
 
+> **`TRACKER.md` and `data/libraries.json` are ONE update, never two.** The JSON is
+> the structured mirror that powers the site. Any change to a tracker row — status,
+> PR/issue link, a newly added or removed library, a newly shipped channel — MUST be
+> applied to the matching `data/libraries.json` entry in the **same change** (Step 7).
+> You are not done until `python3 scripts/check_data.py` passes (Step 9). CI enforces
+> this on every push touching `TRACKER.md` or `data/`.
+
 ## When This Skill Applies
 
 Use when asked to update the tracker, sync progress, or refresh the status of TracingChannel migration work.
@@ -92,9 +99,17 @@ For each library object, keep these fields current:
 
 When **adding a brand-new library**, add a full object (copy the shape of an existing entry) and bump `meta.updated`. Also update `meta.updated` to today's date on any change. The site rebuilds and redeploys automatically on push (`.github/workflows/deploy.yml`) — no manual deploy step.
 
-Sanity-check the JSON parses: `node -e "JSON.parse(require('fs').readFileSync('data/libraries.json'))"`.
+### 8. Validate the data (required gate)
 
-### 8. Report changes
+Run the integrity checker — it must pass before you consider the update done:
+
+```
+python3 scripts/check_data.py
+```
+
+It verifies the JSON is valid and well-shaped, that every shipped/merged library carries its `shippedVersion` + channels, and that every library still appears in `TRACKER.md` (catching drift). The same check runs in CI (`.github/workflows/data-check.yml`) on any push that touches `TRACKER.md` or `data/`, and a PR that edits `TRACKER.md` without `data/libraries.json` gets flagged — so the two genuinely stay in lockstep. Fix any `[FAIL]`/`[warn]` lines it prints.
+
+### 9. Report changes
 
 After updating, show the user a brief summary of what changed:
 - Any status changes (e.g., "pg: PR open -> Merged")
