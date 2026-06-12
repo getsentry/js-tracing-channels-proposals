@@ -1,0 +1,280 @@
+---
+import { allLibraries, stats } from '../lib/data';
+import { icon, iconMap, VERDICT_ICON, STATUS_ICON, UI_ICON } from '../lib/icons';
+import '../styles/global.css';
+
+const year = 2026;
+
+// Background "trace lanes" — each carries an event packet streaming across.
+// Varied positions/speeds/delays so the stream never looks synchronized.
+// The five TracingChannel sub-channels, in lifecycle order, with hover copy.
+const tracingEvents = [
+  { name: 'start', desc: 'Fires synchronously when the traced operation begins. Open your span or start a timer here.' },
+  { name: 'end', desc: 'Fires synchronously when the function returns. For async work this is when the promise is created, not when it settles.' },
+  { name: 'asyncStart', desc: 'Fires when the async result is ready: the callback runs or the promise settles. Your stored context is restored here.' },
+  { name: 'asyncEnd', desc: 'Fires after the async continuation finishes. Close the span and record duration here.' },
+  { name: 'error', desc: 'Fires if the operation throws or the promise rejects, carrying the error so you can mark the span failed.' },
+];
+
+const lanes = [
+  { top: 11, dur: 14, delay: 0, c: 'var(--accent)' },
+  { top: 23, dur: 9.5, delay: 3.2, c: 'var(--accent-2)' },
+  { top: 38, dur: 17, delay: 6, c: 'var(--accent-2)' },
+  { top: 52, dur: 11, delay: 1.5, c: 'var(--accent)' },
+  { top: 67, dur: 15.5, delay: 8.5, c: 'var(--accent-2)' },
+  { top: 79, dur: 8.5, delay: 4.8, c: 'var(--accent)' },
+  { top: 91, dur: 13, delay: 11, c: 'var(--accent)' },
+];
+
+// Inline SVGs (rendered at build time) handed to the client app for dynamic markup.
+const clientIcons = {
+  verdict: iconMap(VERDICT_ICON),
+  status: iconMap(STATUS_ICON),
+  ui: iconMap(UI_ICON),
+};
+// Serialize only the fields the client needs.
+const clientData = allLibraries.map((l) => ({
+  package: l.package,
+  name: l.name,
+  category: l.category,
+  group: l.group,
+  builtin: l.builtin,
+  downloadsPerMonth: l.downloadsPerMonth,
+  aliases: l.aliases,
+  status: l.status,
+  prerelease: l.prerelease ?? false,
+  diagnostics_channel: l.diagnostics_channel,
+  tracing_channel: l.tracing_channel,
+  shippedVersion: l.shippedVersion,
+  channels: l.channels,
+  pr: l.pr,
+  issue: l.issue,
+  driver: l.driver,
+  notes: l.notes,
+  tier: l.tier,
+  verdict: l.verdict,
+}));
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="generator" content={Astro.generator} />
+    <title>Do I Have Diagnostic Channels?</title>
+    <meta
+      name="description"
+      content="Type an npm package and find out instantly whether it ships native diagnostics_channel / TracingChannel support, and where the upstream work stands."
+    />
+    <meta property="og:title" content="Do I Have Diagnostic Channels?" />
+    <meta
+      property="og:description"
+      content="Does your favorite npm package ship native tracing channels? Find out instantly."
+    />
+    <meta property="og:type" content="website" />
+    <link rel="icon" href={`${import.meta.env.BASE_URL}favicon.svg`} type="image/svg+xml" />
+  </head>
+  <body>
+    <div class="trace-bg" aria-hidden="true">
+      <div class="grid"></div>
+      {lanes.map((l) => (
+        <span class="lane" style={`top:${l.top}%;--dur:${l.dur}s;--delay:${l.delay}s;--c:${l.c}`}></span>
+      ))}
+    </div>
+
+    <main>
+      <header class="hero">
+        <p class="kicker">
+          <span class="dot"></span> node.js · diagnostics_channel
+        </p>
+        <h1>
+          Do I have <span class="grad">diagnostic channels</span>?
+        </h1>
+        <p class="sub">
+          Type an npm package. We'll tell you <strong>yes</strong> or <strong>no</strong>:
+          does it ship native <code>diagnostics_channel</code> /
+          <code>TracingChannel</code> support, and where does the work stand upstream?
+        </p>
+      </header>
+
+      <section class="search" role="search">
+        <div class="combo">
+          <Fragment set:html={icon('lucide:search', { cls: 'search-ico' })} />
+          <input
+            id="q"
+            type="text"
+            autocomplete="off"
+            autocapitalize="off"
+            spellcheck="false"
+            placeholder="express, ioredis, @anthropic-ai/sdk…"
+            aria-label="npm package name"
+            aria-expanded="false"
+            aria-controls="suggestions"
+            role="combobox"
+          />
+          <button id="lucky" class="lucky" type="button" title="Surprise me" aria-label="Surprise me" set:html={icon('lucide:dices')}></button>
+        </div>
+        <ul id="suggestions" role="listbox" hidden></ul>
+        <p class="hint">
+          Tracking <strong>{stats.total}</strong> libraries ·
+          <strong>{stats.yes}</strong> already shipped ·
+          <strong>{stats.soon}</strong> in flight
+        </p>
+      </section>
+
+      <section id="result" aria-live="polite"></section>
+
+      <section class="learn">
+        <h2>What even <em>is</em> a diagnostic channel?</h2>
+        <div class="learn-grid">
+          <article class="info" data-grade="AA">
+            <div class="info-top"><span class="info-grade dc">AA</span><h3>diagnostics_channel</h3></div>
+            <p>
+              A publish/subscribe bus baked into Node core. Libraries publish events, tools
+              subscribe, with no monkey-patching and no <code>--require</code> hooks. Stable since Node 16.
+            </p>
+            <a class="info-link" href="https://nodejs.org/api/diagnostics_channel.html" target="_blank" rel="noopener">Node docs&nbsp;↗</a>
+          </article>
+          <article class="info" data-grade="AAA">
+            <div class="info-top"><span class="info-grade tc">AAA</span><h3>TracingChannel</h3></div>
+            <p>
+              A bundle of channels modeling an operation's whole lifecycle:
+              <code>start</code>, <code>end</code>, <code>asyncStart</code>, <code>asyncEnd</code>,
+              <code>error</code>, with context propagated across async boundaries. Since Node
+              18.19 / 19.9 (experimental).
+            </p>
+            <a class="info-link" href="https://nodejs.org/api/diagnostics_channel.html#class-tracingchannel" target="_blank" rel="noopener">Node docs&nbsp;↗</a>
+          </article>
+        </div>
+
+        <div class="card diagram-card">
+          <div class="diagram">
+            <div class="diagram-head">
+              <span class="info-grade dc">AA</span>
+              <h3>diagnostics_channel</h3>
+              <p>A single point event: something happened, and that's the whole story.</p>
+            </div>
+            <div class="track track-point">
+              <span class="track-line"></span>
+              <button type="button" class="checkpoint" data-ev="publish">
+                <span class="cp-dot"></span>
+                <span class="cp-label">publish</span>
+                <span class="tip" role="tooltip"><code>channel.publish(msg)</code> fires once. No start, no end, no duration, no context propagation. Just a signal that an event occurred. Great for metrics, logs, analytics, and counters where you only need to record that something happened.</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="diagram">
+            <div class="diagram-head">
+              <span class="info-grade tc">AAA</span>
+              <h3>TracingChannel</h3>
+              <p>Five sub-channels trace one operation's full lifecycle, carrying context across async hops. Hover a checkpoint to see what it fires.</p>
+            </div>
+            <div class="track track-events">
+              <span class="track-line"></span>
+              {tracingEvents.map((e) => (
+                <button type="button" class="checkpoint" data-ev={e.name}>
+                  <span class="cp-dot"></span>
+                  <span class="cp-label">{e.name}</span>
+                  <span class="tip" role="tooltip">{e.desc}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <h3 class="learn-sub">Works across runtimes</h3>
+        <div class="runtimes">
+          <a class="runtime" href="https://nodejs.org/api/diagnostics_channel.html" target="_blank" rel="noopener">
+            <Fragment set:html={icon('logos:nodejs-icon', { height: '1.7rem', cls: 'rt-ico' })} />
+            <b>Node.js</b><span>native</span></a>
+          <a class="runtime" href="https://docs.deno.com/api/node/diagnostics_channel/" target="_blank" rel="noopener">
+            <Fragment set:html={icon('logos:deno', { height: '1.7rem', cls: 'rt-ico' })} />
+            <b>Deno</b><span>node compat</span></a>
+          <a class="runtime" href="https://bun.com/reference/node/diagnostics_channel" target="_blank" rel="noopener">
+            <Fragment set:html={icon('logos:bun', { height: '1.7rem', cls: 'rt-ico' })} />
+            <b>Bun</b><span>native</span></a>
+          <a class="runtime" href="https://developers.cloudflare.com/workers/runtime-apis/nodejs/diagnostics-channel/" target="_blank" rel="noopener">
+            <Fragment set:html={icon('logos:cloudflare-workers-icon', { height: '1.7rem', cls: 'rt-ico' })} />
+            <b>Cloudflare&nbsp;Workers</b><span>nodejs_compat</span></a>
+        </div>
+
+        <p class="callout">
+          <Fragment set:html={icon('lucide:bandage', { cls: 'callout-ico' })} /> Stuck on an older Node? Datadog's
+          <a href="https://www.npmjs.com/package/dc-polyfill" target="_blank" rel="noopener"><code>dc-polyfill</code></a>
+          backports <code>diagnostics_channel</code> + <code>TracingChannel</code> with zero
+          dependencies (<a href="https://github.com/DataDog/dc-polyfill" target="_blank" rel="noopener">source&nbsp;↗</a>).
+        </p>
+        <p class="callout why">
+          <Fragment set:html={icon('lucide:book-open', { cls: 'callout-ico' })} /> Why this whole effort exists:
+          <a href="https://sentry.engineering/blog/from-monkey-patching-to-tracing-channels" target="_blank" rel="noopener">From monkey-patching to tracing channels&nbsp;↗</a>
+        </p>
+      </section>
+
+      <footer>
+        <a class="by-sentry" href="https://sentry.io" target="_blank" rel="noopener" aria-label="By Sentry">
+          <span class="by">by</span>
+          <svg class="sentry-logo" viewBox="0 0 24 24" aria-hidden="true">
+            <path
+              d="M13.91 2.505c-.873-1.448-2.972-1.448-3.844 0L6.904 7.92a15.478 15.478 0 0 1 8.53 12.811h-2.221A13.301 13.301 0 0 0 5.784 9.814l-2.926 5.06a7.65 7.65 0 0 1 4.435 5.848H2.194a.365.365 0 0 1-.298-.534l1.413-2.402a5.16 5.16 0 0 0-1.614-.913L.296 19.275a2.182 2.182 0 0 0 .812 2.999 2.24 2.24 0 0 0 1.086.288h6.983a9.322 9.322 0 0 0-3.845-8.318l1.11-1.922a11.47 11.47 0 0 1 4.95 10.24h5.915a17.242 17.242 0 0 0-7.885-15.28l2.244-3.845a.37.37 0 0 1 .504-.13c.255.14 9.75 16.708 9.928 16.9a.365.365 0 0 1-.327.543h-2.287c.029.612.029 1.223 0 1.831h2.297a2.206 2.206 0 0 0 1.922-3.31z"
+            ></path>
+          </svg>
+          <span class="sentry-word">Sentry</span>
+        </a>
+        <p>
+          Data from the
+          <a href="https://github.com/getsentry/js-tracing-channels-proposals" target="_blank" rel="noopener">
+            TracingChannel migration tracker</a
+          >. © {year} · made for the Node observability ecosystem.
+        </p>
+      </footer>
+    </main>
+
+    <template id="card-tpl">
+      <article class="card" data-verdict="">
+        <div class="card-glow"></div>
+        <div class="card-head">
+          <div class="title-wrap">
+            <h2 class="pkg"></h2>
+            <p class="pkg-name"></p>
+          </div>
+          <div class="stamp" data-tier=""><span class="stamp-rating"></span><span class="stamp-sub"></span></div>
+        </div>
+
+        <div class="verdict">
+          <span class="verdict-emoji"></span>
+          <span class="verdict-text"></span>
+        </div>
+
+        <div class="caps">
+          <div class="cap" data-cap="dc">
+            <div class="cap-top"><span class="cap-icon"></span><span class="cap-label">diagnostics_channel</span><span class="cap-grade">AA</span></div>
+            <p class="cap-status"></p>
+            <p class="cap-desc">Plain channels you can subscribe to. Observable, but no built-in span lifecycle.</p>
+          </div>
+          <div class="cap" data-cap="tc">
+            <div class="cap-top"><span class="cap-icon"></span><span class="cap-label">TracingChannel</span><span class="cap-grade">AAA</span></div>
+            <p class="cap-status"></p>
+            <p class="cap-desc">start / end / asyncStart / asyncEnd + context. Instrument once, trace cleanly.</p>
+          </div>
+        </div>
+
+        <dl class="meta">
+          <div class="meta-row" data-row="version" hidden><dt>Shipped in</dt><dd class="m-version"></dd></div>
+          <div class="meta-row" data-row="dl" hidden><dt>Downloads</dt><dd class="m-dl"></dd></div>
+          <div class="meta-row" data-row="channels" hidden><dt>Channels</dt><dd class="m-channels"></dd></div>
+          <div class="meta-row" data-row="notes" hidden><dt>Notes</dt><dd class="m-notes"></dd></div>
+        </dl>
+
+        <div class="links"></div>
+      </article>
+    </template>
+
+    <script define:vars={{ LIBS: clientData, ICONS: clientIcons }} is:inline>
+      window.__LIBS = LIBS;
+      window.__ICONS = ICONS;
+    </script>
+    <script src="../scripts/app.ts"></script>
+  </body>
+</html>

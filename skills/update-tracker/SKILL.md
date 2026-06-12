@@ -75,7 +75,26 @@ This refetches weekly npm downloads, recomputes the adoption-aware coverage, and
 - **Attribution discipline.** `"sentry"` = a proposal authored in this repo (`proposals/`) that merged. Never tag independent (`fastify`, `undici`, `pino`) or unjs/community (`h3`, `srvx`, `unstorage`, `nitro`) as Sentry's.
 - **Report the diff (Sentry's effect) + the ceiling, never a single inflated coverage-%.** "Sentry merged native tracing into libraries representing ~X% of weekly downloads; ~Y points adopted today" is the defensible framing.
 
-### 7. Report changes
+### 7. Update the structured data dump (`data/libraries.json`)
+
+`data/libraries.json` is a **parallel, hand-maintained** mirror of the tracker tables — it powers the "Do I Have Diagnostic Channels?" site (`site/`). Whenever a row in `TRACKER.md` changes, apply the same change to the matching `package` entry in `data/libraries.json`. Keep the two in sync by hand; there is no generator.
+
+For each library object, keep these fields current:
+
+- `status` — the overall journey, using these enum values (not the emoji): `shipped` (published in a release users can install), `merged` (merged upstream, no stable release yet), `pr-open`, `discussion`, `proposed`, `not-started`, `no-go`, `skipped`.
+  - A `✅ Merged & released` row → `shipped` (set `shippedVersion`). A bare `✅ Merged` with no release yet → `merged`. A library that ships channels natively (fastify, undici) → `shipped`.
+- `diagnostics_channel` and `tracing_channel` — the AA / AAA capability pair. For a library adding a **TracingChannel**, set both to the same value as `status` (TracingChannel implies diagnostics_channel). For a **plain `diagnostics_channel`** library (e.g. consola), set `diagnostics_channel` to the status and `tracing_channel` to `"none"`.
+- `shippedVersion` — the introducing version once shipped (mirror `scripts/coverage.py`'s `COVERED` map). Set `"prerelease": true` for rc/beta-only channels (e.g. graphql `17.0.0-rc.0`).
+- `pr` / `issue` — `{ "label", "url" }` matching the tracker links; `null` if none.
+- `driver` — `"sentry"` (proposal authored in this repo) or `"other"` (independent/community); `null` if not started.
+- `channels` — known channel names if documented (e.g. `["tracing:fastify.request.handler"]`).
+- `notes` — short free-text matching the tracker's status note.
+
+When **adding a brand-new library**, add a full object (copy the shape of an existing entry) and bump `meta.updated`. Also update `meta.updated` to today's date on any change. The site rebuilds and redeploys automatically on push (`.github/workflows/deploy.yml`) — no manual deploy step.
+
+Sanity-check the JSON parses: `node -e "JSON.parse(require('fs').readFileSync('data/libraries.json'))"`.
+
+### 8. Report changes
 
 After updating, show the user a brief summary of what changed:
 - Any status changes (e.g., "pg: PR open -> Merged")
