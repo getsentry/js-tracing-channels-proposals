@@ -158,12 +158,13 @@ async function npmPackage(name: string): Promise<NpmPkg | null> {
     const r = await fetch(`https://registry.npmjs.org/${npmPath(name)}/latest`);
     if (!r.ok) return null;
     const m = await r.json();
+    const pkgName = m.name ?? name;
     return {
-      name: m.name,
-      version: m.version,
+      name: pkgName,
+      version: m.version ?? '',
       description: m.description ?? '',
       links: {
-        npm: `https://www.npmjs.com/package/${m.name}`,
+        npm: `https://www.npmjs.com/package/${pkgName}`,
         homepage: m.homepage,
         repository: typeof m.repository === 'string' ? m.repository : m.repository?.url,
       },

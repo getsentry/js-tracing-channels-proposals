@@ -12,6 +12,8 @@ on:
     paths:
       - 'data/**'
       - 'TRACKER.md'
+      - 'scripts/check_data.py'
+      - '.github/workflows/data-check.yml'
 
 jobs:
   check:
