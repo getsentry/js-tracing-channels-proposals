@@ -102,6 +102,7 @@ h1 {
   background: linear-gradient(100deg, var(--accent), var(--accent-2));
   -webkit-background-clip: text; background-clip: text; color: transparent;
 }
+.grad.code { font-family: var(--mono); letter-spacing: -0.04em; }
 .sub {
   color: var(--muted); max-width: 48ch; margin: 1.1rem auto 0;
   font-size: 1.05rem; line-height: 1.6;
