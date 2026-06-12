@@ -131,7 +131,7 @@ def main():
         print(f"[FAIL] {e}")
 
     n = len(libs)
-    shipped = sum(1 for l in libs if l["status"] in ("shipped", "merged"))
+    shipped = sum(1 for l in libs if l.get("status") in ("shipped", "merged"))
     chans = sum(len(l.get("channels", [])) for l in libs)
     print(f"\n{n} libraries · {shipped} shipped/merged · {chans} channels · "
           f"{len(errors)} error(s) · {len(warnings)} warning(s)")
