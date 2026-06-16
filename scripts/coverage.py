@@ -45,6 +45,7 @@ COVERED = {
     "ioredis":   ("5.11.0", "sentry"),   # PR #2089, merged 2026-04-07
     "mongoose":  ("9.7.0",  "sentry"),   # PR #16275, released v9.7.0 2026-06-09
     "graphql":   ("17.0.0", "sentry"),   # PR #4670, shipped v17.0.0-rc.0 (pre-release)
+    "ai":        ("7.0.0",  "sentry"),   # vercel/ai#15660, merged 2026-06-15, shipped v7.0.0-beta.178 (pre-release)
     "undici":    ("4.7.0",  "other"),    # Node core diagnostics channels
     "fastify":   ("4.0.0",  "other"),    # tracing:fastify.request.handler, native since v4
     "pino":      ("9.10.0", "other"),    # PR #2281, v9.10.0
@@ -111,7 +112,7 @@ def main():
     md.append("| | Channel-capable / ecosystem | Coverage |")
     md.append("|---|---|---|")
     md.append(f"| **Without Sentry** (undici, fastify, pino, h3, srvx, unstorage, nitro) | {human(other_cap)} / {human(denom)} | **{n1:.1f}%** |")
-    md.append(f"| **With Sentry** (+ mysql2, redis, ioredis, mongoose, graphql) | {human(other_cap+sentry_cap)} / {human(denom)} | **{n2:.1f}%** |")
+    md.append(f"| **With Sentry** (+ mysql2, redis, ioredis, mongoose, graphql, ai) | {human(other_cap+sentry_cap)} / {human(denom)} | **{n2:.1f}%** |")
     md.append(f"| **Sentry's effect (adopted today)** | +{human(sentry_cap)} | **+{n2-n1:.1f} pts** |")
     md.append("")
     md.append(f"**Fair single statement:** Sentry has merged native tracing into libraries representing **~{ceiling:.0f}% of the ecosystem's weekly downloads** (the ceiling at full adoption); **~{n2-n1:.1f} point{'s' if round(n2-n1,1)!=1.0 else ''} is adopted in production today**, with the rest landing as users upgrade.")
