@@ -331,12 +331,40 @@ h1 {
 
 .track { position: relative; display: flex; align-items: flex-start; padding: 2.6rem 14px 2.5rem; }
 .track-point { justify-content: center; }
-.track-events { justify-content: space-between; }
 .track-line {
   position: absolute; left: 22px; right: 22px; top: calc(2.6rem + 7px); height: 2px; border-radius: 2px;
   background: linear-gradient(90deg, var(--accent), var(--accent-2)); opacity: 0.45;
 }
 .track-point .track-line { background: rgba(255, 255, 255, 0.12); opacity: 1; }
+
+/* TracingChannel: two phase segments + an error detour that dips off and rejoins each phase */
+.track-events { display: block; position: relative; height: 172px; padding: 0 14px; }
+.tc-svg {
+  position: absolute; left: 0; width: 100%; top: 40px; height: 90px;
+  overflow: visible; pointer-events: none; z-index: 0;
+}
+.tc-line { fill: none; stroke: var(--accent-2); stroke-width: 2; opacity: 0.5; }
+.tc-gap { fill: none; stroke: var(--muted); stroke-width: 2; stroke-dasharray: 2 7; stroke-linecap: round; opacity: 0.4; }
+.tc-branch { fill: none; stroke: var(--no); stroke-width: 2; stroke-dasharray: 4 5; opacity: 0.6; }
+
+.tc-gap-label {
+  position: absolute; left: 50%; top: 12px; transform: translateX(-50%);
+  font-family: var(--mono); font-size: 0.6rem; letter-spacing: 0.03em;
+  color: var(--muted); opacity: 0.75; white-space: nowrap; pointer-events: none;
+}
+
+.track-events .tc-node { position: absolute; top: 32px; transform: translateX(-50%); }
+.track-events .tc-node.tc-err { top: 122px; }
+
+/* keep edge tooltips inside the card */
+.track-events [data-edge="l"] .tip { left: -6px; transform: translateX(0) translateY(5px); }
+.track-events [data-edge="l"] .tip::after { left: 14px; transform: none; }
+.track-events [data-edge="l"]:hover .tip,
+.track-events [data-edge="l"]:focus-visible .tip { transform: translateX(0) translateY(0); }
+.track-events [data-edge="r"] .tip { left: auto; right: -6px; transform: translateX(0) translateY(5px); }
+.track-events [data-edge="r"] .tip::after { left: auto; right: 14px; transform: none; }
+.track-events [data-edge="r"]:hover .tip,
+.track-events [data-edge="r"]:focus-visible .tip { transform: translateX(0) translateY(0); }
 
 .checkpoint {
   position: relative; appearance: none; background: none; border: 0; cursor: pointer;
@@ -374,16 +402,6 @@ h1 {
 .checkpoint:hover .tip, .checkpoint:focus-visible .tip {
   opacity: 1; visibility: visible; transform: translateX(-50%) translateY(0);
 }
-/* keep edge tooltips inside the card */
-.track-events .checkpoint:first-of-type .tip { left: -6px; transform: translateX(0) translateY(5px); }
-.track-events .checkpoint:first-of-type .tip::after { left: 14px; transform: none; }
-.track-events .checkpoint:first-of-type:hover .tip,
-.track-events .checkpoint:first-of-type:focus-visible .tip { transform: translateX(0) translateY(0); }
-.track-events .checkpoint:last-of-type .tip { left: auto; right: -6px; transform: translateX(0) translateY(5px); }
-.track-events .checkpoint:last-of-type .tip::after { left: auto; right: 14px; transform: none; }
-.track-events .checkpoint:last-of-type:hover .tip,
-.track-events .checkpoint:last-of-type:focus-visible .tip { transform: translateX(0) translateY(0); }
-
 .diagram-note {
   margin: 0; padding-top: 1.4rem; border-top: 1px solid var(--card-border);
   color: var(--muted); font-size: 0.82rem; line-height: 1.65; text-align: center;

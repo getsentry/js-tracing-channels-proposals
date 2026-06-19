@@ -7,13 +7,20 @@ const year = 2026;
 
 // Background "trace lanes" — each carries an event packet streaming across.
 // Varied positions/speeds/delays so the stream never looks synchronized.
-// The five TracingChannel sub-channels, in lifecycle order, with hover copy.
-const tracingEvents = [
-  { name: 'start', desc: 'Fires synchronously when the traced operation begins. Open your span or start a timer here.' },
-  { name: 'end', desc: 'Fires synchronously when the function returns. For async work this is when the promise is created, not when it settles.' },
-  { name: 'asyncStart', desc: 'Fires when the async result is ready: the callback runs or the promise settles. Your stored context is restored here.' },
-  { name: 'asyncEnd', desc: 'Fires after the async continuation finishes. Close the span and record duration here.' },
-  { name: 'error', desc: 'Fires if the operation throws or the promise rejects, carrying the error so you can mark the span failed.' },
+// The four happy-path TracingChannel sub-channels, positioned as two phases:
+// the sync phase (start → end) and the async phase (asyncStart → asyncEnd),
+// separated by the async gap where the operation is awaited. `x` is the % along the track.
+const lifecycleEvents = [
+  { name: 'start', x: 4, desc: 'Fires synchronously when the traced operation begins. Open your span or start a timer here.' },
+  { name: 'end', x: 30, desc: 'Fires synchronously when the function returns — for async work, when the promise is created, not when it settles. Always fires, even after an error.' },
+  { name: 'asyncStart', x: 70, desc: 'Fires when the async result is ready: the callback runs or the promise settles. Your stored context is restored here.' },
+  { name: 'asyncEnd', x: 96, desc: 'Fires after the async continuation finishes. Always fires, even after an error. Close the span and record duration here.' },
+];
+// `error` is the SAME single channel — it just fires in whichever phase fails, and is a
+// detour, not a terminus: end / asyncEnd still fire afterward. Two nodes to show both spots.
+const errorNodes = [
+  { name: 'error', x: 17, desc: 'Sync failure: the function threw between start and end. error fires with the thrown value — then end still fires. It is a detour off the happy path, not the finish line.' },
+  { name: 'error', x: 83, desc: 'Async failure: the promise rejected between asyncStart and asyncEnd. The same error channel fires — then asyncEnd still fires. The operation always completes its lifecycle.' },
 ];
 
 const lanes = [
@@ -169,12 +176,32 @@ const clientData = allLibraries.map((l) => ({
             <div class="diagram-head">
               <span class="info-grade tc">AAA</span>
               <h3>TracingChannel</h3>
-              <p>Five sub-channels trace one operation's full lifecycle, carrying context across async hops. Hover a checkpoint to see what it fires.</p>
+              <p>Two phases — a sync phase (<code>start</code>→<code>end</code>) and, for async work, an async phase (<code>asyncStart</code>→<code>asyncEnd</code>) across the callback or continuation. The single <code>error</code> channel fires in whichever phase fails, but it's a detour: <code>end</code> / <code>asyncEnd</code> still fire after it. Hover a checkpoint to see what it fires.</p>
             </div>
             <div class="track track-events">
-              <span class="track-line"></span>
-              {tracingEvents.map((e) => (
-                <button type="button" class="checkpoint" data-ev={e.name}>
+              <svg class="tc-svg" viewBox="0 0 1000 90" preserveAspectRatio="none" aria-hidden="true">
+                <path class="tc-line" d="M40,0 L300,0" vector-effect="non-scaling-stroke" />
+                <path class="tc-gap" d="M300,0 L700,0" vector-effect="non-scaling-stroke" />
+                <path class="tc-line" d="M700,0 L960,0" vector-effect="non-scaling-stroke" />
+                <path class="tc-branch" d="M120,0 L120,90 L220,90 L220,0" vector-effect="non-scaling-stroke" />
+                <path class="tc-branch" d="M780,0 L780,90 L880,90 L880,0" vector-effect="non-scaling-stroke" />
+              </svg>
+              <span class="tc-gap-label">awaiting callback or continuation</span>
+              {lifecycleEvents.map((e, i) => (
+                <button
+                  type="button"
+                  class="checkpoint tc-node"
+                  data-ev={e.name}
+                  data-edge={i === 0 ? 'l' : i === lifecycleEvents.length - 1 ? 'r' : undefined}
+                  style={`left:${e.x}%`}
+                >
+                  <span class="cp-dot"></span>
+                  <span class="cp-label">{e.name}</span>
+                  <span class="tip" role="tooltip">{e.desc}</span>
+                </button>
+              ))}
+              {errorNodes.map((e) => (
+                <button type="button" class="checkpoint tc-node tc-err" data-ev={e.name} style={`left:${e.x}%`}>
                   <span class="cp-dot"></span>
                   <span class="cp-label">{e.name}</span>
                   <span class="tip" role="tooltip">{e.desc}</span>
