@@ -145,6 +145,7 @@ Core logic is ours — only OTel base classes need swapping.
 | Nitro | ~7M | — | [nitrojs/nitro#4001](https://github.com/nitrojs/nitro/pull/4001) (pi0) | ✅ **Merged** (2026-04-13) |
 | Nuxt | ~6M | — | [nuxt/nuxt#35191](https://github.com/nuxt/nuxt/pull/35191) (danielroe) | 🟡 PR open |
 | Elysia | ~2M | — | [elysiajs/elysia#1809](https://github.com/elysiajs/elysia/issues/1809) | 💬 In discussion |
+| Remix | — | — | — | 📝 Proposal drafted |
 
 ## Logging Libraries
 
@@ -164,6 +165,6 @@ Core logic is ours — only OTel base classes need swapping.
 |---|---|---|---|---|---|
 | OTel-provided | 24 | 7 (mysql2, fastify, redis, ioredis, graphql, mongoose, undici) | 3 (express, pg, knex) | 4 (mongodb, tedious, prisma, dataloader) | 9 + 1 📝 (koa) |
 | Sentry-built | 11 | 1 (vercel-ai) | 0 | 4 (hono, anthropic-ai, postgres.js, tanstack-start) | 6 |
-| Other (non-Sentry) | 9 | 6 | 2 (db0, nuxt) | 1 (elysia) | 0 |
+| Other (non-Sentry) | 10 | 6 | 2 (db0, nuxt) | 1 (elysia) | 0 + 1 📝 (remix) |
 | Logging | 2 | 1 (pino) | 0 | 0 | 0 + 1 📝 (consola) |
-| **Total** | **46** | **15** | **5** | **10** | **15** |
+| **Total** | **47** | **15** | **5** | **10** | **15** |
