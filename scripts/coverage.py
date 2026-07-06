@@ -45,7 +45,7 @@ COVERED = {
     "ioredis":   ("5.11.0", "sentry"),   # PR #2089, merged 2026-04-07
     "mongoose":  ("9.7.0",  "sentry"),   # PR #16275, released v9.7.0 2026-06-09
     "graphql":   ("17.0.0", "sentry"),   # PR #4670, shipped v17.0.0-rc.0 (pre-release)
-    "ai":        ("7.0.0",  "sentry"),   # vercel/ai#15660, merged 2026-06-15, shipped v7.0.0-beta.178 (pre-release)
+    "ai":        ("7.0.0",  "sentry"),   # vercel/ai#15660, merged 2026-06-15, released stable v7.0.0 (2026-06-25)
     "undici":    ("4.7.0",  "other"),    # Node core diagnostics channels
     "fastify":   ("4.0.0",  "other"),    # tracing:fastify.request.handler, native since v4
     "pino":      ("9.10.0", "other"),    # PR #2281, v9.10.0

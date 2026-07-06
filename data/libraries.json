@@ -2,7 +2,7 @@
   "$schema": "./libraries.schema.json",
   "meta": {
     "description": "Canonical structured dump of the TracingChannel Migration Tracker. Hand-maintained alongside TRACKER.md (see skills/update-tracker). Powers the 'Do I Have Diagnostic Channels?' site.",
-    "updated": "2026-06-16",
+    "updated": "2026-07-06",
     "statusValues": {
       "shipped": "Published in a release you can npm install today",
       "merged": "Merged upstream, not yet in a stable release",
@@ -710,10 +710,9 @@
       "downloadsPerMonth": 58000000,
       "aliases": ["vercel ai", "vercel-ai"],
       "status": "shipped",
-      "prerelease": true,
       "diagnostics_channel": "shipped",
       "tracing_channel": "shipped",
-      "shippedVersion": "7.0.0-beta.178",
+      "shippedVersion": "7.0.0",
       "channels": [
         { "name": "ai:telemetry", "type": "tracing", "desc": "Traces an AI SDK telemetry-instrumented operation (generateText, streamText, embed, etc.), preserving parent-child context across nested calls." }
       ],
@@ -721,7 +720,7 @@
       "issue": { "label": "ai#14410", "url": "https://github.com/vercel/ai/issues/14410" },
       "driver": "sentry",
       "sentryLocation": "packages/node/src/integrations/tracing/vercelai/",
-      "notes": "Merged 2026-06-15 (Vercel-driven). Shipped in pre-release v7.0.0-beta.178; stable v6 line pending, not adoptable by most users yet. Replaces the prior `aisdk:telemetry` diagnostics_channel with the `ai:telemetry` TracingChannel. Cloudflare integration (packages/cloudflare/src/integrations/tracing/vercelai.ts) not started."
+      "notes": "Merged 2026-06-15 (Vercel-driven), released in stable v7.0.0 (2026-06-25); now shipped in the `latest` line (v7.0.15) and adoptable on the current v7 major. Replaces the prior `aisdk:telemetry` diagnostics_channel with the `ai:telemetry` TracingChannel. Cloudflare integration (packages/cloudflare/src/integrations/tracing/vercelai.ts) not started."
     },
     {
       "package": "h3",
