@@ -151,7 +151,7 @@ Core logic is ours — only OTel base classes need swapping.
 | Library | ~DL/mo | Upstream PR | Channel Type | Status |
 |---|---|---|---|---|
 | pino | ~142M | [pinojs/pino#2281](https://github.com/pinojs/pino/pull/2281) | TracingChannel (`traceSync`) | ✅ **Merged** (v9.10.0, 2025-09) |
-| consola | ~154M | — | Plain `diagnostics_channel` | 📝 Proposal drafted |
+| consola | ~154M | — | Plain `diagnostics_channel` | ⏭️ Skipped — native reporter API already gives tools a first-class hook into every log event; a channel adds little |
 
 ## Ecosystem Coordination
 
@@ -165,5 +165,5 @@ Core logic is ours — only OTel base classes need swapping.
 | OTel-provided | 24 | 7 (mysql2, fastify, redis, ioredis, graphql, mongoose, undici) | 3 (express, pg, knex) | 4 (mongodb, tedious, prisma, dataloader) | 9 + 1 📝 (koa) |
 | Sentry-built | 11 | 1 (vercel-ai) | 0 | 4 (hono, anthropic-ai, postgres.js, tanstack-start) | 6 |
 | Other (non-Sentry) | 9 | 6 | 2 (db0, nuxt) | 1 (elysia) | 0 |
-| Logging | 2 | 1 (pino) | 0 | 0 | 0 + 1 📝 (consola) |
+| Logging | 2 | 1 (pino) | 0 | 0 | 0 + 1 ⏭️ (consola skipped) |
 | **Total** | **46** | **15** | **5** | **10** | **15** |

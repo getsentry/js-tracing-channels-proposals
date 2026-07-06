@@ -898,8 +898,8 @@
       "builtin": false,
       "downloadsPerMonth": 154000000,
       "aliases": [],
-      "status": "proposed",
-      "diagnostics_channel": "proposed",
+      "status": "skipped",
+      "diagnostics_channel": "skipped",
       "tracing_channel": "none",
       "shippedVersion": null,
       "channels": [],
@@ -907,7 +907,7 @@
       "issue": null,
       "driver": "sentry",
       "sentryLocation": null,
-      "notes": "Targets plain diagnostics_channel (not TracingChannel). Proposal drafted."
+      "notes": "Skipped — consola's native reporter API already gives observability tools a first-class programmatic hook into every log event, so a plain diagnostics_channel would largely duplicate an existing extension point. Low value versus libraries with no native seam."
     }
   ]
 }
