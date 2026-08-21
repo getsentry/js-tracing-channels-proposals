@@ -57,7 +57,7 @@
       "issue": { "label": "express#6353", "url": "https://github.com/expressjs/express/issues/6353" },
       "driver": "sentry",
       "sentryLocation": "packages/node/src/integrations/tracing/express.ts",
-      "notes": ""
+      "notes": "PR pillarjs/router#196 open and approved by Qard and bjohansebas; awaiting merge."
     },
     {
       "package": "fastify",
@@ -117,7 +117,7 @@
       "issue": null,
       "driver": null,
       "sentryLocation": "packages/node/src/integrations/tracing/hapi/",
-      "notes": ""
+      "notes": "Not our work, but a community PR (hapijs/hapi#4429, 2023) adding diagnostic channels is still open and untouched since 2025-03."
     },
     {
       "package": "connect",
@@ -338,7 +338,7 @@
       "issue": { "label": "knex#6394", "url": "https://github.com/knex/knex/issues/6394" },
       "driver": "sentry",
       "sentryLocation": "packages/node/src/integrations/tracing/knex.ts",
-      "notes": ""
+      "notes": "PR knex#6410 open. Maintainer (tgriesser) likes the approach and plans to review and merge it into a v4.0 release once v3.3.0, the final 3.x minor, ships (2026-06-12)."
     },
     {
       "package": "prisma",
@@ -547,7 +547,7 @@
       "issue": { "label": "hono#4842", "url": "https://github.com/honojs/hono/issues/4842" },
       "driver": "sentry",
       "sentryLocation": "packages/node/src/integrations/tracing/hono/",
-      "notes": ""
+      "notes": "Issue honojs/hono#4842 open. On 2026-08-08 yusukebe said TracingChannel is Node-only (it does not run on Cloudflare Workers without nodejs_compat), so he prefers a 3rd-party middleware or external package over Hono core. The `handlerWrapper` (#5200) and `TransformRouter` (#5201) drafts are the seams such a middleware would hang off."
     },
     {
       "package": "postgres",
@@ -614,16 +614,16 @@
       "builtin": false,
       "downloadsPerMonth": 95000000,
       "aliases": [],
-      "status": "discussion",
-      "diagnostics_channel": "discussion",
-      "tracing_channel": "discussion",
+      "status": "no-go",
+      "diagnostics_channel": "no-go",
+      "tracing_channel": "no-go",
       "shippedVersion": null,
       "channels": [],
       "pr": null,
       "issue": { "label": "openai-node#1819", "url": "https://github.com/openai/openai-node/issues/1819" },
       "driver": "sentry",
       "sentryLocation": "packages/node/src/integrations/tracing/openai/",
-      "notes": ""
+      "notes": "Declined upstream 2026-08-14: openai-node#1819 closed as not planned. OpenAI is not adding first-party diagnostics_channel instrumentation for now (the public instrumentation contract needs more product and API design) and points at the custom fetch, logging, and request-ID hooks meanwhile; recorded internally for future consideration."
     },
     {
       "package": "@anthropic-ai/sdk",
@@ -642,7 +642,7 @@
       "issue": { "label": "anthropic-sdk-typescript#1036", "url": "https://github.com/anthropics/anthropic-sdk-typescript/issues/1036" },
       "driver": "sentry",
       "sentryLocation": "packages/node/src/integrations/tracing/anthropic-ai/",
-      "notes": ""
+      "notes": "Issue anthropic-sdk-typescript#1036 still open. A community PR (#1091) tracing only `messages.stream` was closed 2026-08-07: maintainers want to design observability once, covering `messages.create` too, with channel naming settled on #1036."
     },
     {
       "package": "@google/genai",
@@ -720,7 +720,7 @@
       "issue": { "label": "ai#14410", "url": "https://github.com/vercel/ai/issues/14410" },
       "driver": "sentry",
       "sentryLocation": "packages/node/src/integrations/tracing/vercelai/",
-      "notes": "Merged 2026-06-15 (Vercel-driven), released in stable v7.0.0 (2026-06-25); now shipped in the `latest` line (v7.0.15) and adoptable on the current v7 major. Replaces the prior `aisdk:telemetry` diagnostics_channel with the `ai:telemetry` TracingChannel. Cloudflare integration (packages/cloudflare/src/integrations/tracing/vercelai.ts) not started."
+      "notes": "Merged 2026-06-15 (Vercel-driven), released in stable v7.0.0 (2026-06-25); shipped in the `latest` line and adoptable on the current v7 major. Replaces the prior `aisdk:telemetry` diagnostics_channel with the `ai:telemetry` TracingChannel. Cloudflare integration (packages/cloudflare/src/integrations/tracing/vercelai.ts) not started."
     },
     {
       "package": "h3",
@@ -798,16 +798,18 @@
       "builtin": false,
       "downloadsPerMonth": 16000000,
       "aliases": [],
-      "status": "pr-open",
-      "diagnostics_channel": "pr-open",
-      "tracing_channel": "pr-open",
-      "shippedVersion": null,
-      "channels": [],
+      "status": "shipped",
+      "diagnostics_channel": "shipped",
+      "tracing_channel": "shipped",
+      "shippedVersion": "0.4.0",
+      "channels": [
+        { "name": "db0.query", "type": "tracing", "desc": "Traces every query or exec a db0 database runs, from the SQL template through to the connector's result." }
+      ],
       "pr": { "label": "unjs/db0#193", "url": "https://github.com/unjs/db0/pull/193" },
       "issue": { "label": "sentry-javascript#18023", "url": "https://github.com/getsentry/sentry-javascript/issues/18023" },
       "driver": "other",
       "sentryLocation": null,
-      "notes": ""
+      "notes": "Merged 2026-08-20 (unjs/db0#193), released in v0.4.0 the same day. Opt-in: wrap the database with `withTracing()` from `db0/tracing`, otherwise nothing is emitted. Bound parameters are never put on the channel."
     },
     {
       "package": "nitropack",
@@ -839,16 +841,21 @@
       "builtin": false,
       "downloadsPerMonth": 6000000,
       "aliases": [],
-      "status": "pr-open",
-      "diagnostics_channel": "pr-open",
-      "tracing_channel": "pr-open",
-      "shippedVersion": null,
-      "channels": [],
+      "status": "shipped",
+      "diagnostics_channel": "shipped",
+      "tracing_channel": "shipped",
+      "shippedVersion": "4.5.0",
+      "channels": [
+        { "name": "nuxt.render", "type": "tracing", "desc": "Traces a page-level server render, covering both the buffered and the streaming path." },
+        { "name": "nuxt.island", "type": "tracing", "desc": "Traces rendering of a single server island component." },
+        { "name": "nuxt.data", "type": "tracing", "desc": "Traces each useAsyncData / useFetch handler execution on the server." },
+        { "name": "nuxt.plugin", "type": "tracing", "desc": "Traces each Nuxt app plugin invocation during server-side startup." }
+      ],
       "pr": { "label": "nuxt/nuxt#35191", "url": "https://github.com/nuxt/nuxt/pull/35191" },
       "issue": null,
       "driver": "other",
       "sentryLocation": null,
-      "notes": "danielroe."
+      "notes": "Merged 2026-06-11 (nuxt/nuxt#35191, danielroe) and released in v4.5.0 (2026-07-18). Opt-in through the `tracingChannel` config, which also carries Nitro's own channels."
     },
     {
       "package": "elysia",

@@ -53,6 +53,8 @@ COVERED = {
     "srvx":      ("0.0.0",  "other"),    # srvx#141 (new pkg; ~all current)
     "unstorage": ("1.16.0", "other"),    # unjs/unstorage#707
     "nitropack": ("2.12.0", "other"),    # nitrojs/nitro#4001
+    "nuxt":      ("4.5.0",  "other"),    # nuxt/nuxt#35191, merged 2026-06-11, released v4.5.0
+    "db0":       ("0.4.0",  "other"),    # unjs/db0#193, merged + released v0.4.0 2026-08-20
 }
 
 def _get(url, tries=5):
@@ -111,8 +113,11 @@ def main():
     md.append("")
     md.append("| | Channel-capable / ecosystem | Coverage |")
     md.append("|---|---|---|")
-    md.append(f"| **Without Sentry** (undici, fastify, pino, h3, srvx, unstorage, nitro) | {human(other_cap)} / {human(denom)} | **{n1:.1f}%** |")
-    md.append(f"| **With Sentry** (+ mysql2, redis, ioredis, mongoose, graphql, ai) | {human(other_cap+sentry_cap)} / {human(denom)} | **{n2:.1f}%** |")
+    # Library lists are generated from COVERED so they can't drift from the numbers.
+    others = ", ".join(pkg for pkg, _, who, *_ in rows if who == "other")
+    ours = ", ".join(pkg for pkg, _, who, *_ in rows if who == "sentry")
+    md.append(f"| **Without Sentry** ({others}) | {human(other_cap)} / {human(denom)} | **{n1:.1f}%** |")
+    md.append(f"| **With Sentry** (+ {ours}) | {human(other_cap+sentry_cap)} / {human(denom)} | **{n2:.1f}%** |")
     md.append(f"| **Sentry's effect (adopted today)** | +{human(sentry_cap)} | **+{n2-n1:.1f} pts** |")
     md.append("")
     md.append(f"**Fair single statement:** Sentry has merged native tracing into libraries representing **~{ceiling:.0f}% of the ecosystem's weekly downloads** (the ceiling at full adoption); **~{n2-n1:.1f} point{'s' if round(n2-n1,1)!=1.0 else ''} is adopted in production today**, with the rest landing as users upgrade.")
