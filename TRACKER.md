@@ -126,7 +126,7 @@ Core logic is ours — only OTel base classes need swapping.
 |---|---|---|---|---|---|---|
 | OpenAI | `openai` | ~95M | `packages/node/src/integrations/tracing/openai/` | [openai-node#1819](https://github.com/openai/openai-node/issues/1819) | — | 💬 Issue opened |
 | Anthropic AI | `@anthropic-ai/sdk` | ~86M | `packages/node/src/integrations/tracing/anthropic-ai/` | [anthropic-sdk-typescript#1036](https://github.com/anthropics/anthropic-sdk-typescript/issues/1036) | — | 💬 Issue opened |
-| Google GenAI | `@google/genai` | ~51M | `packages/node/src/integrations/tracing/google-genai/` | — | — | ⬜ Not started |
+| Google GenAI | `@google/genai` | ~51M | `packages/node/src/integrations/tracing/google-genai/` | — | — | 📝 Proposal drafted |
 | LangChain | `langchain` / `@langchain/*` | ~10M | `packages/node/src/integrations/tracing/langchain/` | — | — | ⬜ Not started |
 | LangGraph | `@langchain/langgraph` | ~10M | `packages/node/src/integrations/tracing/langgraph/` | — | — | ⬜ Not started |
 | Vercel AI (Node) | `ai` | ~58M | `packages/node/src/integrations/tracing/vercelai/` | [ai#14410](https://github.com/vercel/ai/issues/14410) | [ai#15660](https://github.com/vercel/ai/pull/15660) (Vercel-driven) | ✅ **Merged & released** (v7.0.0, 2026-06-25) — now shipped in the stable `latest` line (v7.0.15); adoptable on the current v7 major. Ships `ai:telemetry` TracingChannel |
@@ -163,7 +163,7 @@ Core logic is ours — only OTel base classes need swapping.
 | Category | Total | ✅ Merged | 🟡 PR Open | 💬 In Discussion | ⬜ Not Started |
 |---|---|---|---|---|---|
 | OTel-provided | 24 | 7 (mysql2, fastify, redis, ioredis, graphql, mongoose, undici) | 3 (express, pg, knex) | 4 (mongodb, tedious, prisma, dataloader) | 9 + 1 📝 (koa) |
-| Sentry-built | 11 | 1 (vercel-ai) | 0 | 4 (hono, anthropic-ai, postgres.js, tanstack-start) | 6 |
+| Sentry-built | 11 | 1 (vercel-ai) | 0 | 5 (hono, anthropic-ai, postgres.js, tanstack-start, google-genai) | 5 |
 | Other (non-Sentry) | 9 | 6 | 2 (db0, nuxt) | 1 (elysia) | 0 |
 | Logging | 2 | 1 (pino) | 0 | 0 | 0 + 1 ⏭️ (consola skipped) |
-| **Total** | **46** | **15** | **5** | **10** | **15** |
+| **Total** | **46** | **15** | **5** | **11** | **14** |

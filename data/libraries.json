@@ -2,7 +2,7 @@
   "$schema": "./libraries.schema.json",
   "meta": {
     "description": "Canonical structured dump of the TracingChannel Migration Tracker. Hand-maintained alongside TRACKER.md (see skills/update-tracker). Powers the 'Do I Have Diagnostic Channels?' site.",
-    "updated": "2026-07-06",
+    "updated": "2026-08-21",
     "statusValues": {
       "shipped": "Published in a release you can npm install today",
       "merged": "Merged upstream, not yet in a stable release",
@@ -652,16 +652,16 @@
       "builtin": false,
       "downloadsPerMonth": 51000000,
       "aliases": ["gemini", "google genai"],
-      "status": "not-started",
-      "diagnostics_channel": "not-started",
-      "tracing_channel": "not-started",
+      "status": "proposed",
+      "diagnostics_channel": "proposed",
+      "tracing_channel": "proposed",
       "shippedVersion": null,
       "channels": [],
       "pr": null,
       "issue": null,
-      "driver": null,
+      "driver": "sentry",
       "sentryLocation": "packages/node/src/integrations/tracing/google-genai/",
-      "notes": ""
+      "notes": "Proposal drafted (proposals/google-genai.md). Five per-method TracingChannels (models.generateContent[/Stream], models.embedContent, chats.sendMessage[/Stream]); mirrors the anthropic-ai / openai provider-SDK proposals. Sentry already instruments @google/genai via ~1,000 lines of IITM/RITM constructor patching + client wrapping today. No upstream issue opened yet."
     },
     {
       "package": "langchain",
