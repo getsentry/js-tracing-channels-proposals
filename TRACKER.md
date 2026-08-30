@@ -104,7 +104,7 @@ These currently rely on external monkey-patching infrastructure (IITM/RITM) and 
 
 | Integration | Target Package | ~DL/mo | Sentry Location | Upstream Issue | Upstream PR | Status |
 |---|---|---|---|---|---|---|
-| FS | `fs` (Node built-in) | built-in | `packages/node/src/integrations/fs.ts` | — | — | ⬜ Not started |
+| FS | `fs` (Node built-in) | built-in | `packages/node/src/integrations/fs.ts` | [node#65330](https://github.com/nodejs/node/issues/65330) | [node#65370](https://github.com/nodejs/node/pull/65370) | 🟡 PR open (Node core, opened by mcollina, not ours). Per-operation `tracing:fs.<op>:*` families. We weighed in on the open design question: timfish raised subscriber overhead, logaretm backed per-operation channels over one channel with an `operation` field |
 | Undici | `undici` / native fetch | ~476M | `packages/node/src/integrations/node-fetch.ts` | — | — | ✅ Ships TracingChannel natively (`undici:request`, Node core) |
 
 ## Sentry-Built (11) — Need API Migration Only
@@ -162,10 +162,10 @@ Core logic is ours — only OTel base classes need swapping.
 
 | Category | Total | ✅ Merged | 🟡 PR Open | 💬 In Discussion | ⬜ Not Started |
 |---|---|---|---|---|---|
-| OTel-provided | 24 | 7 (mysql2, fastify, redis, ioredis, graphql, mongoose, undici) | 3 (express, pg, knex) | 5 (mongodb, tedious, prisma, dataloader, 📝 koa) | 7 + 2 🔴⏭️ (mysql, lru-memoizer) |
+| OTel-provided | 24 | 7 (mysql2, fastify, redis, ioredis, graphql, mongoose, undici) | 4 (express, pg, knex, fs) | 5 (mongodb, tedious, prisma, dataloader, 📝 koa) | 6 + 2 🔴⏭️ (mysql, lru-memoizer) |
 | Sentry-built | 11 | 1 (vercel-ai) | 0 | 5 (hono, anthropic-ai, postgres.js, tanstack-start, 📝 google-genai) | 4 + 1 🔴 (openai declined) |
 | Other (non-Sentry) | 9 | 8 | 0 | 1 (elysia) | 0 |
 | Logging | 2 | 1 (pino) | 0 | 0 | 0 + 1 ⏭️ (consola skipped) |
-| **Total** | **46** | **17** | **3** | **11** | **11 + 4 🔴⏭️** |
+| **Total** | **46** | **17** | **4** | **11** | **10 + 4 🔴⏭️** |
 
 Counting rules: 📝 proposal-drafted rows count as In Discussion; 🔴 no-go and ⏭️ skipped rows are called out separately rather than folded into Not Started.

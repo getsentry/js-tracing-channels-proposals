@@ -2,7 +2,7 @@
   "$schema": "./libraries.schema.json",
   "meta": {
     "description": "Canonical structured dump of the TracingChannel Migration Tracker. Hand-maintained alongside TRACKER.md (see skills/update-tracker). Powers the 'Do I Have Diagnostic Channels?' site.",
-    "updated": "2026-08-21",
+    "updated": "2026-08-28",
     "statusValues": {
       "shipped": "Published in a release you can npm install today",
       "merged": "Merged upstream, not yet in a stable release",
@@ -490,16 +490,16 @@
       "builtin": true,
       "downloadsPerMonth": null,
       "aliases": ["node:fs"],
-      "status": "not-started",
-      "diagnostics_channel": "not-started",
-      "tracing_channel": "not-started",
+      "status": "pr-open",
+      "diagnostics_channel": "pr-open",
+      "tracing_channel": "pr-open",
       "shippedVersion": null,
       "channels": [],
-      "pr": null,
-      "issue": null,
-      "driver": null,
+      "pr": { "label": "node#65370", "url": "https://github.com/nodejs/node/pull/65370" },
+      "issue": { "label": "node#65330", "url": "https://github.com/nodejs/node/issues/65330" },
+      "driver": "other",
       "sentryLocation": "packages/node/src/integrations/fs.ts",
-      "notes": "Node built-in."
+      "notes": "Node built-in. Upstream PR by mcollina adds per-operation `tracing:fs.<op>:*` families; we backed the granular design in review."
     },
     {
       "package": "undici",
