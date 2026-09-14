@@ -1,7 +1,7 @@
 # TracingChannel Migration Tracker
 
 > Adding native `diagnostics_channel` `TracingChannel` support to benefit all observability tools, including OTel, Sentry, Datadog, and others.
-> 35 total instrumentations in Sentry JS SDK: 24 OTel-provided + 11 Sentry-built. 46 total tracked.
+> 35 total instrumentations in Sentry JS SDK: 24 OTel-provided + 11 Sentry-built. 47 total tracked.
 
 | Emoji | Status |
 |---|---|
@@ -145,6 +145,7 @@ Core logic is ours — only OTel base classes need swapping.
 | Nitro | ~7M | — | [nitrojs/nitro#4001](https://github.com/nitrojs/nitro/pull/4001) (pi0) | ✅ **Merged** (2026-04-13) |
 | Nuxt | ~6M | — | [nuxt/nuxt#35191](https://github.com/nuxt/nuxt/pull/35191) (danielroe) | ✅ **Merged & released** (v4.5.0, 2026-07-18), opt-in via the `tracingChannel` config |
 | Elysia | ~2M | — | [elysiajs/elysia#1809](https://github.com/elysiajs/elysia/issues/1809) | 💬 In discussion |
+| Remix | ~62K (`remix`; v2 traffic is on `@remix-run/*`, ~3.4M) | — | — | 📝 Proposal drafted. Remix 3 is a ground-up rewrite (on `3.0.0-rc.2`) with no APM instrumentation yet |
 
 ## Logging Libraries
 
@@ -164,8 +165,8 @@ Core logic is ours — only OTel base classes need swapping.
 |---|---|---|---|---|---|
 | OTel-provided | 24 | 7 (mysql2, fastify, redis, ioredis, graphql, mongoose, undici) | 4 (express, pg, knex, fs) | 5 (mongodb, tedious, prisma, dataloader, 📝 koa) | 6 + 2 🔴⏭️ (mysql, lru-memoizer) |
 | Sentry-built | 11 | 1 (vercel-ai) | 0 | 5 (hono, anthropic-ai, postgres.js, tanstack-start, 📝 google-genai) | 4 + 1 🔴 (openai declined) |
-| Other (non-Sentry) | 9 | 8 | 0 | 1 (elysia) | 0 |
+| Other (non-Sentry) | 10 | 8 | 0 | 2 (elysia, 📝 remix) | 0 |
 | Logging | 2 | 1 (pino) | 0 | 0 | 0 + 1 ⏭️ (consola skipped) |
-| **Total** | **46** | **17** | **4** | **11** | **10 + 4 🔴⏭️** |
+| **Total** | **47** | **17** | **4** | **12** | **10 + 4 🔴⏭️** |
 
 Counting rules: 📝 proposal-drafted rows count as In Discussion; 🔴 no-go and ⏭️ skipped rows are called out separately rather than folded into Not Started.

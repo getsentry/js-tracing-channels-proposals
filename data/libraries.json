@@ -2,7 +2,7 @@
   "$schema": "./libraries.schema.json",
   "meta": {
     "description": "Canonical structured dump of the TracingChannel Migration Tracker. Hand-maintained alongside TRACKER.md (see skills/update-tracker). Powers the 'Do I Have Diagnostic Channels?' site.",
-    "updated": "2026-08-28",
+    "updated": "2026-09-14",
     "statusValues": {
       "shipped": "Published in a release you can npm install today",
       "merged": "Merged upstream, not yet in a stable release",
@@ -875,6 +875,25 @@
       "driver": "sentry",
       "sentryLocation": null,
       "notes": "In discussion."
+    },
+    {
+      "package": "remix",
+      "name": "Remix",
+      "group": "other",
+      "category": "Web Frameworks",
+      "builtin": false,
+      "downloadsPerMonth": 62000,
+      "aliases": ["remix 3", "remix-run"],
+      "status": "proposed",
+      "diagnostics_channel": "proposed",
+      "tracing_channel": "proposed",
+      "shippedVersion": null,
+      "channels": [],
+      "pr": null,
+      "issue": null,
+      "driver": "sentry",
+      "sentryLocation": null,
+      "notes": "Proposal drafted (proposals/remix.md). Three TracingChannels, one per Remix 3 subsystem: remix:request (fetch-router middleware + route handlers), remix:render (ui/server SSR), remix:asset (on-demand script/style compilation). Remix 3 is a ground-up rewrite currently on 3.0.0-rc.2 with no APM instrumentation yet, so channels can land before anyone builds monkey-patching for it. Downloads are for the `remix` meta package; Remix 2 traffic still sits on @remix-run/* (~3.4M/mo). No upstream issue opened yet."
     },
     {
       "package": "pino",
