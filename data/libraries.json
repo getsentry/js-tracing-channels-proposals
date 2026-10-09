@@ -2,7 +2,7 @@
   "$schema": "./libraries.schema.json",
   "meta": {
     "description": "Canonical structured dump of the TracingChannel Migration Tracker. Hand-maintained alongside TRACKER.md (see skills/update-tracker). Powers the 'Do I Have Diagnostic Channels?' site.",
-    "updated": "2026-09-14",
+    "updated": "2026-10-09",
     "statusValues": {
       "shipped": "Published in a release you can npm install today",
       "merged": "Merged upstream, not yet in a stable release",
@@ -48,16 +48,18 @@
       "builtin": false,
       "downloadsPerMonth": 449000000,
       "aliases": [],
-      "status": "pr-open",
-      "diagnostics_channel": "pr-open",
-      "tracing_channel": "pr-open",
+      "status": "merged",
+      "diagnostics_channel": "merged",
+      "tracing_channel": "merged",
       "shippedVersion": null,
-      "channels": [],
+      "channels": [
+        { "name": "express.router.request", "type": "tracing", "desc": "Traces each middleware, route handler, and error handler that runs while the router handles a request." }
+      ],
       "pr": { "label": "pillarjs/router#196", "url": "https://github.com/pillarjs/router/pull/196" },
       "issue": { "label": "express#6353", "url": "https://github.com/expressjs/express/issues/6353" },
       "driver": "sentry",
       "sentryLocation": "packages/node/src/integrations/tracing/express.ts",
-      "notes": "PR pillarjs/router#196 open and approved by Qard and bjohansebas; awaiting merge."
+      "notes": "PR pillarjs/router#196 merged 2026-10-09; not yet in a router release (latest v2.2.0)."
     },
     {
       "package": "fastify",

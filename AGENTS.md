@@ -17,6 +17,7 @@ skills/              — Agent skills for generating new proposals
 | [ioredis](proposals/ioredis.md) | `ioredis` | [redis/ioredis#2089](https://github.com/redis/ioredis/pull/2089) | PR open |
 | [pg](proposals/pg.md) | `pg` / `pg-pool` | [brianc/node-postgres#3624](https://github.com/brianc/node-postgres/pull/3624) | PR open |
 | [mysql2](proposals/mysql2.md) | `mysql2` | [sidorares/node-mysql2#4178](https://github.com/sidorares/node-mysql2/pull/4178) | **Merged** |
+| [express](proposals/express.md) | `express` (via `router`) | [pillarjs/router#196](https://github.com/pillarjs/router/pull/196) | **Merged** |
 | [mongodb](proposals/mongodb.md) | `mongodb` | — | Proposal, under discussion |
 | [tedious](proposals/tedious.md) | `tedious` | — | Draft (not yet submitted) |
 

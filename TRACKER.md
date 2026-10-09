@@ -58,7 +58,7 @@ These currently rely on external monkey-patching infrastructure (IITM/RITM) and 
 | Integration | Target Package | ~DL/mo | Sentry Location | Upstream Issue | Upstream PR | Status |
 |---|---|---|---|---|---|---|
 | HTTP | `http`/`https` (Node built-in) | built-in | `packages/node/src/integrations/http.ts` | — | — | ⬜ Not started |
-| Express | `express` | ~449M | `packages/node/src/integrations/tracing/express.ts` | [express#6353](https://github.com/expressjs/express/issues/6353) | [pillarjs/router#196](https://github.com/pillarjs/router/pull/196) | 🟡 PR open, approved by Qard and bjohansebas |
+| Express | `express` | ~449M | `packages/node/src/integrations/tracing/express.ts` | [express#6353](https://github.com/expressjs/express/issues/6353) | [pillarjs/router#196](https://github.com/pillarjs/router/pull/196) | ✅ **Merged** (2026-10-09), not yet in a router release |
 | Fastify | `fastify` | ~33M | `packages/node/src/integrations/tracing/fastify/` | — | — | ✅ Ships TracingChannel natively (`tracing:fastify.request.handler`) |
 | Koa | `koa` | ~32M | `packages/node/src/integrations/tracing/koa.ts` | — | — | 📝 Proposal drafted |
 | Hapi | `@hapi/hapi` | ~6M | `packages/node/src/integrations/tracing/hapi/` | — | [hapi#4429](https://github.com/hapijs/hapi/pull/4429) (community, stale) | ⬜ Not started. A 2023 community PR is open but has been untouched since 2025-03 |
@@ -163,7 +163,7 @@ Core logic is ours — only OTel base classes need swapping.
 
 | Category | Total | ✅ Merged | 🟡 PR Open | 💬 In Discussion | ⬜ Not Started |
 |---|---|---|---|---|---|
-| OTel-provided | 24 | 7 (mysql2, fastify, redis, ioredis, graphql, mongoose, undici) | 4 (express, pg, knex, fs) | 5 (mongodb, tedious, prisma, dataloader, 📝 koa) | 6 + 2 🔴⏭️ (mysql, lru-memoizer) |
+| OTel-provided | 24 | 8 (mysql2, fastify, redis, ioredis, graphql, mongoose, undici, express) | 3 (pg, knex, fs) | 5 (mongodb, tedious, prisma, dataloader, 📝 koa) | 6 + 2 🔴⏭️ (mysql, lru-memoizer) |
 | Sentry-built | 11 | 1 (vercel-ai) | 0 | 5 (hono, anthropic-ai, postgres.js, tanstack-start, 📝 google-genai) | 4 + 1 🔴 (openai declined) |
 | Other (non-Sentry) | 10 | 8 | 0 | 2 (elysia, 📝 remix) | 0 |
 | Logging | 2 | 1 (pino) | 0 | 0 | 0 + 1 ⏭️ (consola skipped) |
