@@ -851,13 +851,33 @@
         { "name": "nuxt.render", "type": "tracing", "desc": "Traces a page-level server render, covering both the buffered and the streaming path." },
         { "name": "nuxt.island", "type": "tracing", "desc": "Traces rendering of a single server island component." },
         { "name": "nuxt.data", "type": "tracing", "desc": "Traces each useAsyncData / useFetch handler execution on the server." },
-        { "name": "nuxt.plugin", "type": "tracing", "desc": "Traces each Nuxt app plugin invocation during server-side startup." }
+        { "name": "nuxt.plugin", "type": "tracing", "desc": "Traces each Nuxt app plugin invocation during server-side startup." },
+        { "name": "nuxt.request", "type": "tracing", "desc": "Traces each request the Nuxt renderer handles, whichever server runtime serves it (merged in nuxt/nuxt#36483, not yet released)." }
       ],
       "pr": { "label": "nuxt/nuxt#35191", "url": "https://github.com/nuxt/nuxt/pull/35191" },
       "issue": null,
       "driver": "other",
       "sentryLocation": null,
-      "notes": "Merged 2026-06-11 (nuxt/nuxt#35191, danielroe) and released in v4.5.0 (2026-07-18). Opt-in through the `tracingChannel` config, which also carries Nitro's own channels."
+      "notes": "Merged 2026-06-11 (nuxt/nuxt#35191, danielroe) and released in v4.5.0 (2026-07-18). Opt-in through the `tracingChannel` config, which also carries Nitro's own channels. nuxt.request added in nuxt/nuxt#36483 (merged 2026-10-06), not yet released (latest v4.6.0)."
+    },
+    {
+      "package": "node:sqlite",
+      "name": "node:sqlite",
+      "group": "other",
+      "category": "Databases",
+      "builtin": true,
+      "downloadsPerMonth": null,
+      "aliases": ["sqlite"],
+      "status": "pr-open",
+      "diagnostics_channel": "pr-open",
+      "tracing_channel": "pr-open",
+      "shippedVersion": null,
+      "channels": [],
+      "pr": { "label": "nodejs/node#66581", "url": "https://github.com/nodejs/node/pull/66581" },
+      "issue": null,
+      "driver": "sentry",
+      "sentryLocation": null,
+      "notes": "Node built-in. PR nodejs/node#66581 adds a sqlite.query TracingChannel; open, awaiting review."
     },
     {
       "package": "elysia",

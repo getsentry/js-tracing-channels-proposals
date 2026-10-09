@@ -1,7 +1,8 @@
 # Nuxt `nuxt.request`: `TracingChannel` Proposal
 
 > **Issue:** TBD (going straight to PR)
-> **Status:** 📝 Proposal drafted, implementation on `awad/nuxt-request-tracing-channel`
+> **Status:** ✅ Merged (2026-10-06)
+> **PR:** [nuxt/nuxt#36483](https://github.com/nuxt/nuxt/pull/36483)
 > **Target package:** `nuxt` (renderer in `packages/nuxt/src/runtime/server/renderer`), motivated by `@nuxt/vite-server`
 
 ---

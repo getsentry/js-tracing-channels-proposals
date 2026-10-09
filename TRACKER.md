@@ -144,6 +144,8 @@ Core logic is ours — only OTel base classes need swapping.
 | db0 | ~16M | [sentry-javascript#18023](https://github.com/getsentry/sentry-javascript/issues/18023) | [unjs/db0#193](https://github.com/unjs/db0/pull/193) | ✅ **Merged & released** (v0.4.0, 2026-08-20), opt-in via `withTracing()` |
 | Nitro | ~7M | — | [nitrojs/nitro#4001](https://github.com/nitrojs/nitro/pull/4001) (pi0) | ✅ **Merged** (2026-04-13) |
 | Nuxt | ~6M | — | [nuxt/nuxt#35191](https://github.com/nuxt/nuxt/pull/35191) (danielroe) | ✅ **Merged & released** (v4.5.0, 2026-07-18), opt-in via the `tracingChannel` config |
+| Nuxt (`nuxt.request`) | — | — | [nuxt/nuxt#36483](https://github.com/nuxt/nuxt/pull/36483) | ✅ **Merged** (2026-10-06), not yet released (latest v4.6.0) |
+| node:sqlite | built-in | — | [nodejs/node#66581](https://github.com/nodejs/node/pull/66581) | 🟡 PR open, awaiting review |
 | Elysia | ~2M | — | [elysiajs/elysia#1809](https://github.com/elysiajs/elysia/issues/1809) | 💬 In discussion |
 | Remix | ~62K (`remix`; v2 traffic is on `@remix-run/*`, ~3.4M) | — | — | 📝 Proposal drafted. Remix 3 is a ground-up rewrite (on `3.0.0-rc.2`) with no APM instrumentation yet |
 
@@ -165,8 +167,8 @@ Core logic is ours — only OTel base classes need swapping.
 |---|---|---|---|---|---|
 | OTel-provided | 24 | 8 (mysql2, fastify, redis, ioredis, graphql, mongoose, undici, express) | 3 (pg, knex, fs) | 5 (mongodb, tedious, prisma, dataloader, 📝 koa) | 6 + 2 🔴⏭️ (mysql, lru-memoizer) |
 | Sentry-built | 11 | 1 (vercel-ai) | 0 | 5 (hono, anthropic-ai, postgres.js, tanstack-start, 📝 google-genai) | 4 + 1 🔴 (openai declined) |
-| Other (non-Sentry) | 10 | 8 | 0 | 2 (elysia, 📝 remix) | 0 |
+| Other (non-Sentry) | 12 | 9 | 1 (node:sqlite) | 2 (elysia, 📝 remix) | 0 |
 | Logging | 2 | 1 (pino) | 0 | 0 | 0 + 1 ⏭️ (consola skipped) |
-| **Total** | **47** | **17** | **4** | **12** | **10 + 4 🔴⏭️** |
+| **Total** | **49** | **18** | **5** | **12** | **10 + 4 🔴⏭️** |
 
 Counting rules: 📝 proposal-drafted rows count as In Discussion; 🔴 no-go and ⏭️ skipped rows are called out separately rather than folded into Not Started.

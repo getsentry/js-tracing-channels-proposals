@@ -1,7 +1,8 @@
 # node:sqlite: `TracingChannel` Proposal
 
 > **Target:** [nodejs/node](https://github.com/nodejs/node) (`lib/sqlite.js`, `src/node_sqlite.cc`)
-> **Status:** Draft (not yet submitted)
+> **Status:** 🟡 PR open
+> **PR:** [nodejs/node#66581](https://github.com/nodejs/node/pull/66581)
 
 ---
 
