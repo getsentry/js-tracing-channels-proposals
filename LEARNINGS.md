@@ -7,7 +7,7 @@
 
 ### Use npm package name as channel prefix
 
-Every channel uses the npm package name as prefix (`mysql2:query`, `pg:connection`, `ioredis:command`). This mirrors undici's `undici:request` from Node.js core and ensures global uniqueness in the `diagnostics_channel` namespace.
+Every channel uses the npm package name as prefix (`mysql2:query`, `pg:connect`, `ioredis:command`). This mirrors undici's `undici:request` from Node.js core and ensures global uniqueness in the `diagnostics_channel` namespace.
 
 ### Use domain verbs, not method names
 

@@ -69,7 +69,7 @@ mysql2:query
 mysql2:execute
 mysql2:connect
 pg:query
-pg:connection
+pg:connect
 node-redis:command
 ioredis:command
 consola:log
