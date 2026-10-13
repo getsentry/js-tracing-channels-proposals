@@ -2,7 +2,7 @@
   "$schema": "./libraries.schema.json",
   "meta": {
     "description": "Canonical structured dump of the TracingChannel Migration Tracker. Hand-maintained alongside TRACKER.md (see skills/update-tracker). Powers the 'Do I Have Diagnostic Channels?' site.",
-    "updated": "2026-10-09",
+    "updated": "2026-10-13",
     "statusValues": {
       "shipped": "Published in a release you can npm install today",
       "merged": "Merged upstream, not yet in a stable release",
@@ -497,11 +497,11 @@
       "tracing_channel": "pr-open",
       "shippedVersion": null,
       "channels": [],
-      "pr": { "label": "node#65370", "url": "https://github.com/nodejs/node/pull/65370" },
+      "pr": { "label": "node#66575", "url": "https://github.com/nodejs/node/pull/66575" },
       "issue": { "label": "node#65330", "url": "https://github.com/nodejs/node/issues/65330" },
-      "driver": "other",
+      "driver": "sentry",
       "sentryLocation": "packages/node/src/integrations/fs.ts",
-      "notes": "Node built-in. Upstream PR by mcollina adds per-operation `tracing:fs.<op>:*` families; we backed the granular design in review."
+      "notes": "Node built-in. Two competing PRs: timfish's node#66575 (ours) publishes from the JS wrappers via traceSync/traceCallback/tracePromise so bindStore() propagates; mcollina's node#65370 publishes from the internal fs layer. Both use per-operation `tracing:fs.<op>:*` families."
     },
     {
       "package": "undici",

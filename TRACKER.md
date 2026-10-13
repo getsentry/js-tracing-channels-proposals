@@ -104,7 +104,7 @@ These currently rely on external monkey-patching infrastructure (IITM/RITM) and 
 
 | Integration | Target Package | ~DL/mo | Sentry Location | Upstream Issue | Upstream PR | Status |
 |---|---|---|---|---|---|---|
-| FS | `fs` (Node built-in) | built-in | `packages/node/src/integrations/fs.ts` | [node#65330](https://github.com/nodejs/node/issues/65330) | [node#65370](https://github.com/nodejs/node/pull/65370) | 🟡 PR open (Node core, opened by mcollina, not ours). Per-operation `tracing:fs.<op>:*` families. We weighed in on the open design question: timfish raised subscriber overhead, logaretm backed per-operation channels over one channel with an `operation` field |
+| FS | `fs` (Node built-in) | built-in | `packages/node/src/integrations/fs.ts` | [node#65330](https://github.com/nodejs/node/issues/65330) | [node#66575](https://github.com/nodejs/node/pull/66575) (timfish), [node#65370](https://github.com/nodejs/node/pull/65370) (mcollina) | 🟡 Two competing PRs open. Both add per-operation `tracing:fs.<op>:*` families. mcollina's #65370 publishes from the internal fs layer; timfish's #66575 (ours) publishes from the JS wrappers with `traceSync`/`traceCallback`/`tracePromise`, so one context spans every event of a call and `bindStore()` propagates into callbacks |
 | Undici | `undici` / native fetch | ~476M | `packages/node/src/integrations/node-fetch.ts` | — | — | ✅ Ships TracingChannel natively (`undici:request`, Node core) |
 
 ## Sentry-Built (11) — Need API Migration Only
