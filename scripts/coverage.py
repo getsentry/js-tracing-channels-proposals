@@ -55,6 +55,7 @@ COVERED = {
     "nitropack": ("2.12.0", "other"),    # nitrojs/nitro#4001
     "nuxt":      ("4.5.0",  "other"),    # nuxt/nuxt#35191, merged 2026-06-11, released v4.5.0
     "db0":       ("0.4.0",  "other"),    # unjs/db0#193, merged + released v0.4.0 2026-08-20
+    "postgres":  ("4.0.0",  "sentry"),   # porsager/postgres#1171, maintainer shipped natively in v4.0.0 2026-10-29
 }
 
 def _get(url, tries=5):

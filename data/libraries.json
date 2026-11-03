@@ -2,7 +2,7 @@
   "$schema": "./libraries.schema.json",
   "meta": {
     "description": "Canonical structured dump of the TracingChannel Migration Tracker. Hand-maintained alongside TRACKER.md (see skills/update-tracker). Powers the 'Do I Have Diagnostic Channels?' site.",
-    "updated": "2026-10-13",
+    "updated": "2026-11-03",
     "statusValues": {
       "shipped": "Published in a release you can npm install today",
       "merged": "Merged upstream, not yet in a stable release",
@@ -559,16 +559,22 @@
       "builtin": false,
       "downloadsPerMonth": 40000000,
       "aliases": ["postgres.js", "postgresjs"],
-      "status": "discussion",
-      "diagnostics_channel": "discussion",
-      "tracing_channel": "discussion",
-      "shippedVersion": null,
-      "channels": [],
+      "status": "shipped",
+      "diagnostics_channel": "shipped",
+      "tracing_channel": "shipped",
+      "shippedVersion": "4.0.0",
+      "channels": [
+        { "name": "postgres:query", "type": "tracing", "desc": "Traces every query from when it is sent until it settles." },
+        { "name": "postgres:connect", "type": "tracing", "desc": "Traces every attempt to connect to a host, up to a ready connection or an error." },
+        { "name": "postgres:transaction", "type": "tracing", "desc": "Traces every sql.begin transaction up to its commit or rollback." },
+        { "name": "postgres:pool", "type": "diagnostics", "desc": "Fires as pool connections open, go idle, get leased and released, close, and as queries wait." },
+        { "name": "postgres:notice", "type": "diagnostics", "desc": "Fires for every notice the server sends." }
+      ],
       "pr": null,
       "issue": { "label": "postgres#1171", "url": "https://github.com/porsager/postgres/issues/1171" },
       "driver": "sentry",
       "sentryLocation": "packages/node/src/integrations/tracing/postgresjs.ts",
-      "notes": ""
+      "notes": "Shipped natively in v4.0.0 (2026-10-29). porsager built it into the v4 rewrite in response to issue #1171, which he closed on release."
     },
     {
       "package": "@tanstack/react-start",
