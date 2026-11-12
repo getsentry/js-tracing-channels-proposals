@@ -2,7 +2,7 @@
   "$schema": "./libraries.schema.json",
   "meta": {
     "description": "Canonical structured dump of the TracingChannel Migration Tracker. Hand-maintained alongside TRACKER.md (see skills/update-tracker). Powers the 'Do I Have Diagnostic Channels?' site.",
-    "updated": "2026-11-03",
+    "updated": "2026-11-12",
     "statusValues": {
       "shipped": "Published in a release you can npm install today",
       "merged": "Merged upstream, not yet in a stable release",
@@ -584,16 +584,16 @@
       "builtin": false,
       "downloadsPerMonth": 52000000,
       "aliases": ["tanstack start", "tanstack-start"],
-      "status": "discussion",
-      "diagnostics_channel": "discussion",
-      "tracing_channel": "discussion",
+      "status": "pr-open",
+      "diagnostics_channel": "pr-open",
+      "tracing_channel": "pr-open",
       "shippedVersion": null,
       "channels": [],
-      "pr": null,
+      "pr": { "label": "TanStack/router#8923", "url": "https://github.com/TanStack/router/pull/8923" },
       "issue": { "label": "TanStack/router#7604", "url": "https://github.com/TanStack/router/discussions/7604" },
       "driver": "sentry",
       "sentryLocation": "packages/tanstackstart-react/",
-      "notes": "Discussion open."
+      "notes": "Draft PR open (2026-11-12). Adds @tanstack/start:request, @tanstack/start:render and @tanstack/router:loader."
     },
     {
       "package": "firebase-admin",

@@ -118,7 +118,7 @@ Core logic is ours — only OTel base classes need swapping.
 |---|---|---|---|---|---|---|
 | Hono | `hono` | ~161M | `packages/node/src/integrations/tracing/hono/` | [hono#4842](https://github.com/honojs/hono/issues/4842) | — | 💬 Issue opened. Maintainer leans toward a 3rd-party middleware over core, since TracingChannel is Node-only (2026-08-08) |
 | Postgres.js | `postgres` | ~40M | `packages/node/src/integrations/tracing/postgresjs.ts` | [postgres#1171](https://github.com/porsager/postgres/issues/1171) | maintainer-built (no PR) | ✅ **Merged & released** (v4.0.0, 2026-10-29). porsager shipped it natively in the v4 rewrite in response to our issue |
-| TanStack Start | `@tanstack/react-start` | ~52M | `packages/tanstackstart-react/` | [TanStack/router#7604](https://github.com/TanStack/router/discussions/7604) (discussion) | — | 💬 Discussion open |
+| TanStack Start | `@tanstack/react-start` | ~52M | `packages/tanstackstart-react/` | [TanStack/router#7604](https://github.com/TanStack/router/discussions/7604) (discussion) | [TanStack/router#8923](https://github.com/TanStack/router/pull/8923) | 🟡 Draft PR open (2026-11-12). Adds `@tanstack/start:request`, `@tanstack/start:render` and `@tanstack/router:loader` |
 | Firebase | `firebase-admin` | ~28M | `packages/node/src/integrations/tracing/firebase/` | — | — | ⬜ Not started |
 
 ### AI / ML Providers
@@ -167,9 +167,9 @@ Core logic is ours — only OTel base classes need swapping.
 | Category | Total | ✅ Merged | 🟡 PR Open | 💬 In Discussion | ⬜ Not Started |
 |---|---|---|---|---|---|
 | OTel-provided | 24 | 8 (mysql2, fastify, redis, ioredis, graphql, mongoose, undici, express) | 3 (pg, knex, fs) | 5 (mongodb, tedious, prisma, dataloader, 📝 koa) | 6 + 2 🔴⏭️ (mysql, lru-memoizer) |
-| Sentry-built | 11 | 2 (vercel-ai, postgres.js) | 0 | 4 (hono, anthropic-ai, tanstack-start, 📝 google-genai) | 4 + 1 🔴 (openai declined) |
+| Sentry-built | 11 | 2 (vercel-ai, postgres.js) | 1 (tanstack-start) | 3 (hono, anthropic-ai, 📝 google-genai) | 4 + 1 🔴 (openai declined) |
 | Other (non-Sentry) | 12 | 9 | 1 (node:sqlite) | 2 (elysia, 📝 remix) | 0 |
 | Logging | 2 | 1 (pino) | 0 | 0 | 0 + 1 ⏭️ (consola skipped) |
-| **Total** | **49** | **19** | **5** | **11** | **10 + 4 🔴⏭️** |
+| **Total** | **49** | **19** | **6** | **10** | **10 + 4 🔴⏭️** |
 
 Counting rules: 📝 proposal-drafted rows count as In Discussion; 🔴 no-go and ⏭️ skipped rows are called out separately rather than folded into Not Started.
