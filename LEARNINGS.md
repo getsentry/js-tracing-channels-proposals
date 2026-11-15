@@ -85,6 +85,38 @@ When a library has existing observability primitives, evaluate the integration o
 
 Never frame TracingChannel as replacing existing monitoring APIs. That triggers defensiveness. Frame it as filling a specific gap — async context propagation for distributed tracing — that existing APIs don't cover.
 
+## Lifecycle Semantics
+
+### Match Node's traceSync/tracePromise contract at `end` (pillarjs/router, 2026-11-15)
+
+**From:** [pillarjs/router#223](https://github.com/pillarjs/router/pull/223)
+
+Subscribers decide at `end` whether the operation is over, so the library must reproduce Node's ordering exactly (verified with a probe against `traceSync`/`tracePromise`):
+
+- `traceSync`: `result` is set before `end`. For an async fn traced with `traceSync`, `result` is the Promise.
+- `tracePromise`: no `result` at `end`; the resolved value is set before `asyncStart`.
+- Sync throw: `error`, then `end` with `error` set.
+- Rejection: `end`, `error`, `asyncStart`, `asyncEnd`.
+
+So `'result' in ctx || 'error' in ctx` at `end` means no `asyncStart`/`asyncEnd` follows, and subscribers can use the standard pattern:
+
+```js
+end(ctx) { if ('result' in ctx || 'error' in ctx) ctx.span.end() } // done, no asyncEnd follows
+asyncEnd(ctx) { ctx.span.end() }
+```
+
+### Document exits Node has no slot for (pillarjs/router, 2026-11-15)
+
+Node's model is one call, one outcome: return, throw, resolve, reject. Middleware also has `next(err)`, which can run before the handler returns (and runs the rest of the chain synchronously), and multiple errors per call (`next(a); throw b`). Don't hold events back to fake Node's order: delaying the `error` publish until a promise was known to follow fired it after the downstream error handler had run and dropped the second error. Publish when it happens and adjust what the context exposes instead: when a promise follows, hide `ctx.error` during `end` (delete, publish `end`, restore) so `end` doesn't look done. The one order Node can't produce is `error, end, asyncStart, asyncEnd`, for an async handler calling `next(err)` before its first await; the done check at `end` still holds. Write down every such deviation precisely.
+
+Open design call: `throw seen` sets `ctx.error`, but `next(seen)` (plain forwarding) does not. Forwarding is not treated as a failure of that handler.
+
+### Test every exit path as a matrix, not the line under review (pillarjs/router, 2026-11-15)
+
+**Reviewer:** Ulises Gascon
+
+All four router gaps were found in review, none by self-review, because each fix only touched the line pointed at. A fix for a rethrowing error handler (`throw err`) covered the sync throw but not rejection (`async (err) => { throw err }`), so those spans ended unmarked as failed. A field rename (`error` to `incomingError`) unmasked that gap, because `'error' in ctx` had been true by accident. When a fix touches one exit path, apply it to all of them (sync throw, rejection, `next(err)`); when a field's meaning changes, rerun every path that relied on it; diff behavior against the previous release, not just against Node. Enumerate exit paths (kinds × modes × outcomes) and assert the invariants mechanically: router's 54-case matrix failed 12/54 before the review fixes, 6/54 before the async fix, and 54/54 on the final branch. Checklist and harness: "Lifecycle invariant matrix" in `skills/implement-tracing-channel-pattern/SKILL.md`.
+
 ## Node.js Compatibility
 
 ### TracingChannel.hasSubscribers is broken on Node 18
@@ -190,6 +222,10 @@ The `shouldTrace` helper activates tracing unconditionally on Node 18, so even u
 ### Don't mock the database in integration tests
 
 Run integration tests against real services via Docker. Mock/prod divergence has masked broken implementations in the past.
+
+### Don't let dedup or filtering decide `result`/`error` (pillarjs/router, 2026-11-15)
+
+Dedup and filtering logic may only gate whether the `error` channel publishes, never whether `ctx.result` or `ctx.error` is set. Subscribers read those fields to know the operation is over. Router publishes each error once, at its origin, and skipping an already published error also skipped `ctx.error`, so error handlers that rethrew (`throw err`) never ended their span.
 
 ## Argument Sanitization
 

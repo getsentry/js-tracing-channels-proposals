@@ -155,7 +155,7 @@ export { CommandTraceContext, ConnectTraceContext } from './tracing';
 
 ### Rules
 
-1. **Use `tracePromise`** for async operations. It handles the full lifecycle: `start` → `end` → `asyncStart` → `asyncEnd`/`error`.
+1. **Use `tracePromise`** for async operations. It handles the full lifecycle: `start`, `end`, then `asyncStart`, `asyncEnd` on resolve, or `error`, `asyncStart`, `asyncEnd` on reject (see the reference order in "Lifecycle invariant matrix").
 
 2. **`tracePromise` wrapper causes unhandled rejections when discarded.** `tracePromise` returns a wrapper promise that re-rejects on error. If any caller discards this return value (pipeline/batch paths, fire-and-forget sends), the wrapper rejects with nobody listening — causing `unhandledRejection` that can crash under `--unhandled-rejections=throw`. **Always add `.catch(noop)` on the wrapper** at the trace helper level (see the `traceCommand` example above). Callers that `await`/`return` the traced promise are unaffected — they see the rejection through their own `.then()` chain. When auditing call sites, check every place the traced function is called and verify the return value is always consumed; if even one path discards it, the `.catch(noop)` is required.
 
@@ -247,6 +247,42 @@ Test against a real instance of the service (not mocks). Subscribe to the `traci
 4. **Connection tracing**: Verify `connect` channel fires with server info.
 5. **Connection errors**: Point at a bad port, verify `error` fires.
 6. **No subscribers**: Verify operations work without errors when nobody is listening.
+7. **Lifecycle invariants**: Run the invariant matrix below over every exit path.
+
+### Lifecycle invariant matrix
+
+Before calling a channel done, enumerate every exit path and assert the invariants mechanically. Reading the code finds the line a reviewer pointed at, not the class of bug (see "Lifecycle Semantics" in `LEARNINGS.md`).
+
+Node's reference order, which the library must reproduce:
+
+| Path | Events | At `end` |
+|---|---|---|
+| `traceSync` return | start, end | `result` set (the Promise, for an async fn) |
+| Sync throw | start, error, end | `error` set |
+| `tracePromise` resolve | start, end, asyncStart, asyncEnd | neither set; `result` set before `asyncStart` |
+| `tracePromise` reject | start, end, error, asyncStart, asyncEnd | neither set |
+
+**Dimensions** (pillarjs/router: 3 × 3 × 6 = 54 cases):
+
+- **Kinds:** every call shape the channel wraps. Router: route handler, error handler (4 args), param callback.
+- **Modes:** `sync`, `async` (acts before its first await), `async-after-await` (acts after `await null`). Split async in two: a callback outcome like `next(err)` before the first await lands before `end`.
+- **Outcomes:** every way out. Router: `next()` and return a value, `throw new`, `throw seen` (an error already published upstream), `next(new)`, `next(seen)` (forwarding), `next(new)` then `throw new`. Without callbacks this shrinks to return, throw, resolve, reject, plus any "already seen" error that dedup logic treats specially.
+
+**Setup** (router): an upstream `fail` middleware publishes a "seen" error; for non error handlers a `swallow` error handler recovers with `next()` so the request reaches the subject; a final error handler responds.
+
+**Invariants**, per subject invocation:
+
+- [ ] Exactly one `start` and one `end`
+- [ ] If `end` looks done (`'result' in ctx || 'error' in ctx`), no `asyncStart`/`asyncEnd` follows
+- [ ] If `end` does not look done, exactly one `asyncEnd` follows
+- [ ] At the terminal event, a failing outcome has `error` set and a passing one has `result` set
+- [ ] The `error` channel fires once per new error, on the handler where it originated, never on handlers that forward it
+
+**Validate the matrix itself.** Run it against commits from before known fixes and confirm it fails there. Router's failed 12/54 before the review fixes, 6/54 before the async fix, and passed 54/54 on the final branch.
+
+**Not covered:** ordering relative to downstream handlers (e.g. the origin's `error` firing before the next error handler runs). Write a dedicated test for that, and diff behavior against the previous release for every path the change touches.
+
+**Reference harness:** [`router-invariant-matrix.js`](router-invariant-matrix.js) (`node router-invariant-matrix.js <router dir>`). Adapt `KINDS`, `MODES`, `OUTCOMES`, and the setup for another library.
 
 ### Test pitfalls
 
@@ -345,6 +381,9 @@ docker stop test-db && docker rm test-db
 - [ ] `traceCallback` guarded against undefined callbacks (`shouldTrace(ch) && callback`)
 - [ ] `tracePromise` wrapper has `.catch(noop)` to prevent unhandled rejections when callers discard the return value
 - [ ] `tracePromise` not used where custom Promise types must be preserved (use `traceCallback` inside user's Promise constructor instead)
+- [ ] Lifecycle invariant matrix passes on every kind × mode × outcome, and fails on a pre-fix commit
+- [ ] `ctx.error` set on every failing exit path (sync throw, rejection, callback error); dedup only gates the `error` publish
+- [ ] Behavior diffed against the previous release for every path the change touches
 - [ ] **Lint passes on all changed files**
 - [ ] **FULL test suite (unit + integration) passes locally with Docker**
 - [ ] **FULL test suite passes on ALL Node versions in CI matrix via nvm**

@@ -434,6 +434,17 @@ This accurately represents Express's execution model, where each middleware enco
 
 When a route has multiple handlers (`app.get('/path', validate, load, respond)`), all handlers inside the route share the same `req.route`. The subscriber can distinguish them by `layer.name` (the function name) and by execution order. Only the final handler typically sets `res.statusCode`, so subscribers should read response attributes on `asyncEnd` rather than `start`.
 
+### Detecting the terminal event
+
+The implementation has since diverged from this proposal (the channel shipped as `express.router.request`). [pillarjs/router#223](https://github.com/pillarjs/router/pull/223) makes it follow the `traceSync`/`tracePromise` contract, so sync handlers end at `end` with no `asyncEnd`, and subscribers end spans with the standard Node pattern:
+
+```js
+end(ctx) { if ('result' in ctx || 'error' in ctx) ctx.span.end() } // done, no asyncEnd follows
+asyncEnd(ctx) { ctx.span.end() }
+```
+
+Where middleware has outcomes Node can't express (`next(err)`, several errors per call), see "Lifecycle Semantics" in `LEARNINGS.md`.
+
 ---
 
 Would love to hear your thoughts on the channel design and context shape. Happy to put together a PR targeting `pillarjs/router` with the implementation.
