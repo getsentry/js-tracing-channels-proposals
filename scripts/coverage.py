@@ -44,7 +44,7 @@ COVERED = {
     "redis":     ("5.12.0", "sentry"),   # node-redis PR #3195, merged 2026-04-02
     "ioredis":   ("5.11.0", "sentry"),   # PR #2089, merged 2026-04-07
     "mongoose":  ("9.7.0",  "sentry"),   # PR #16275, released v9.7.0 2026-06-09
-    "graphql":   ("17.0.0", "sentry"),   # PR #4670, shipped v17.0.0-rc.0 (pre-release)
+    "graphql":   ("17.0.0", "sentry"),   # PR #4670, rc.0 2026-06-02, stable v17.0.0 2026-06-15
     "ai":        ("7.0.0",  "sentry"),   # vercel/ai#15660, merged 2026-06-15, released stable v7.0.0 (2026-06-25)
     "undici":    ("4.7.0",  "other"),    # Node core diagnostics channels
     "fastify":   ("4.0.0",  "other"),    # tracing:fastify.request.handler, native since v4
@@ -55,6 +55,7 @@ COVERED = {
     "nitropack": ("2.12.0", "other"),    # nitrojs/nitro#4001
     "nuxt":      ("4.5.0",  "other"),    # nuxt/nuxt#35191, merged 2026-06-11, released v4.5.0
     "db0":       ("0.4.0",  "other"),    # unjs/db0#193, merged + released v0.4.0 2026-08-20
+    "express":   ("5.0.0",  "sentry"),   # pillarjs/router#196 + #223, router v2.3.0 2026-11-17; all express 5 depend on router@^2
     "postgres":  ("4.0.0",  "sentry"),   # porsager/postgres#1171, maintainer shipped natively in v4.0.0 2026-10-29
 }
 

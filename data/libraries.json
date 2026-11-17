@@ -2,7 +2,7 @@
   "$schema": "./libraries.schema.json",
   "meta": {
     "description": "Canonical structured dump of the TracingChannel Migration Tracker. Hand-maintained alongside TRACKER.md (see skills/update-tracker). Powers the 'Do I Have Diagnostic Channels?' site.",
-    "updated": "2026-11-12",
+    "updated": "2026-11-17",
     "statusValues": {
       "shipped": "Published in a release you can npm install today",
       "merged": "Merged upstream, not yet in a stable release",
@@ -48,10 +48,10 @@
       "builtin": false,
       "downloadsPerMonth": 449000000,
       "aliases": [],
-      "status": "merged",
-      "diagnostics_channel": "merged",
-      "tracing_channel": "merged",
-      "shippedVersion": null,
+      "status": "shipped",
+      "diagnostics_channel": "shipped",
+      "tracing_channel": "shipped",
+      "shippedVersion": "5.0.0",
       "channels": [
         { "name": "express.router.request", "type": "tracing", "desc": "Traces each middleware, route handler, and error handler that runs while the router handles a request." }
       ],
@@ -59,7 +59,7 @@
       "issue": { "label": "express#6353", "url": "https://github.com/expressjs/express/issues/6353" },
       "driver": "sentry",
       "sentryLocation": "packages/node/src/integrations/tracing/express.ts",
-      "notes": "PR pillarjs/router#196 merged 2026-10-09; not yet in a router release (latest v2.2.0)."
+      "notes": "Shipped in router v2.3.0 (2026-11-17, pillarjs/router#196 + #223). Express 5 picks it up via its router@^2 dependency."
     },
     {
       "package": "fastify",
@@ -370,10 +370,9 @@
       "downloadsPerMonth": 169000000,
       "aliases": ["graphql-js"],
       "status": "shipped",
-      "prerelease": true,
       "diagnostics_channel": "shipped",
       "tracing_channel": "shipped",
-      "shippedVersion": "17.0.0-rc.0",
+      "shippedVersion": "17.0.0",
       "channels": [
         { "name": "graphql:parse", "type": "tracing", "desc": "Traces parsing a GraphQL source string into a document AST." },
         { "name": "graphql:validate", "type": "tracing", "desc": "Traces validating a document against the schema." },
@@ -387,7 +386,7 @@
       "issue": { "label": "graphql-js#4629", "url": "https://github.com/graphql/graphql-js/issues/4629" },
       "driver": "sentry",
       "sentryLocation": "packages/node/src/integrations/tracing/graphql.ts",
-      "notes": "Shipped in pre-release v17.0.0-rc.0 (2026-06-02); not adoptable by most users yet."
+      "notes": "First shipped in v17.0.0-rc.0 (2026-06-02); stable in v17.0.0 (2026-06-15)."
     },
     {
       "package": "kafkajs",
